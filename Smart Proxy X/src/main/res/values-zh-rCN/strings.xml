@@ -18,4 +18,5 @@
     <string name="exit_confirm_info">这将会断开VPN连接，确定要退出吗？</string>
     <string name="err_invalid_url">无效的配置地址</string>
     <string name="config_url_hint">URL或本地文件路径</string>
+    <string name="auto_start_text">开机自动启动</string>
 </resources>

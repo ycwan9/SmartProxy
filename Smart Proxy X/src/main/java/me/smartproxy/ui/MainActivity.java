@@ -5,11 +5,10 @@ import com.google.zxing.integration.android.IntentResult;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,6 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
@@ -44,8 +44,6 @@ public class MainActivity extends ActionBarActivity implements
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private static final String CONFIG_URL_KEY = "CONFIG_URL_KEY";
-
     private static final int START_VPN_SERVICE_REQUEST_CODE = 1985;
 
     private SwitchCompat switchProxy;
@@ -58,10 +56,16 @@ public class MainActivity extends ActionBarActivity implements
 
     private Calendar mCalendar;
 
+    private CheckBox autoStartConfigCheckBox;
+
+    private Context _context;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        _context = this;
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_awesome_toolbar);
         setSupportActionBar(toolbar);
@@ -71,7 +75,7 @@ public class MainActivity extends ActionBarActivity implements
         findViewById(R.id.configUrlLayout).setOnClickListener(this);
 
         textViewConfigUrl = (TextView) findViewById(R.id.textViewConfigUrl);
-        String configUrl = readConfigUrl();
+        String configUrl = Utils.readConfigUrl(this);
         if (TextUtils.isEmpty(configUrl)) {
             textViewConfigUrl.setText(R.string.config_not_set_value);
         } else {
@@ -83,18 +87,15 @@ public class MainActivity extends ActionBarActivity implements
 
         mCalendar = Calendar.getInstance();
         LocalVpnService.addOnStatusChangedListener(this);
-    }
 
-    String readConfigUrl() {
-        SharedPreferences preferences = getSharedPreferences("SmartProxy", MODE_PRIVATE);
-        return preferences.getString(CONFIG_URL_KEY, "");
-    }
-
-    void setConfigUrl(String configUrl) {
-        SharedPreferences preferences = getSharedPreferences("SmartProxy", MODE_PRIVATE);
-        Editor editor = preferences.edit();
-        editor.putString(CONFIG_URL_KEY, configUrl);
-        editor.commit();
+        autoStartConfigCheckBox = (CheckBox) findViewById(R.id.autoStartCheckBox);
+        autoStartConfigCheckBox.setChecked(Utils.readAutoStartConfig(_context));
+        autoStartConfigCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Utils.setAutoStartConfig(MainActivity.this, isChecked);
+            }
+        });
     }
 
     String getVersionName() {
@@ -181,8 +182,8 @@ public class MainActivity extends ActionBarActivity implements
         final EditText editText = new EditText(this);
         editText.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
         editText.setHint(getString(R.string.config_url_hint));
-        editText.setText(readConfigUrl());
-        
+        editText.setText(Utils.readConfigUrl(_context));
+
         new AlertDialog.Builder(this)
                 .setTitle(R.string.config_url)
                 .setView(editText)
@@ -195,7 +196,7 @@ public class MainActivity extends ActionBarActivity implements
 
                         String configUrl = editText.getText().toString().trim();
                         if (isValidUrl(configUrl)) {
-                            setConfigUrl(configUrl);
+                            Utils.setConfigUrl(_context, configUrl);
                             textViewConfigUrl.setText(configUrl);
                         } else {
                             Toast.makeText(MainActivity.this, R.string.err_invalid_url,
@@ -253,7 +254,7 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     private void startVPNService() {
-        String configUrl = readConfigUrl();
+        String configUrl = Utils.readConfigUrl(_context);
         if (!isValidUrl(configUrl)) {
             Toast.makeText(this, R.string.err_invalid_url, Toast.LENGTH_SHORT).show();
             switchProxy.post(new Runnable() {
@@ -291,7 +292,7 @@ public class MainActivity extends ActionBarActivity implements
         if (scanResult != null) {
             String configUrl = scanResult.getContents();
             if (isValidUrl(configUrl)) {
-                setConfigUrl(configUrl);
+                Utils.setConfigUrl(_context, configUrl);
                 textViewConfigUrl.setText(configUrl);
             } else {
                 Toast.makeText(MainActivity.this, R.string.err_invalid_url, Toast.LENGTH_SHORT)

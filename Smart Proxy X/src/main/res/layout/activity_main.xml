@@ -11,6 +11,23 @@
             android:background="?attr/colorPrimary"/>
 
     <LinearLayout
+            android:id="@+id/autoStartConfigLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <CheckBox android:id="@+id/autoStartCheckBox"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="10dp"
+                  android:layout_marginBottom="10dp"
+                  android:layout_marginLeft="5dp"
+                  android:text="@string/auto_start_text"
+                  android:textAppearance="?android:textAppearanceMedium"
+                />
+    </LinearLayout>
+
+    <LinearLayout
             android:id="@+id/configUrlLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

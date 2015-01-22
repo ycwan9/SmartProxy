@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,6 +72,8 @@ public class LocalVpnService extends VpnService implements Runnable {
 
     private long m_ReceivedBytes;
 
+    private static List<String> pendingLogs;
+
     public LocalVpnService() {
         ID++;
         m_Handler = new Handler();
@@ -80,6 +83,8 @@ public class LocalVpnService extends VpnService implements Runnable {
         m_UDPHeader = new UDPHeader(m_Packet, 20);
         m_DNSBuffer = ((ByteBuffer) ByteBuffer.wrap(m_Packet).position(28)).slice();
         Instance = this;
+
+        pendingLogs = new ArrayList<>();
 
         System.out.printf("New VPNService(%d)\n", ID);
     }
@@ -109,6 +114,15 @@ public class LocalVpnService extends VpnService implements Runnable {
     public static void addOnStatusChangedListener(onStatusChangedListener listener) {
         if (!m_OnStatusChangedListeners.containsKey(listener)) {
             m_OnStatusChangedListeners.put(listener, 1);
+            if (pendingLogs != null && !pendingLogs.isEmpty()) {
+                for (Map.Entry<onStatusChangedListener, Object> entry : m_OnStatusChangedListeners
+                        .entrySet()) {
+                    for (String logString : pendingLogs) {
+                        entry.getKey().onLogReceived(logString);
+                    }
+                    pendingLogs.clear();
+                }
+            }
         }
     }
 
@@ -132,6 +146,9 @@ public class LocalVpnService extends VpnService implements Runnable {
 
     public void writeLog(final String format, Object... args) {
         final String logString = String.format(format, args);
+        if (m_OnStatusChangedListeners.isEmpty()) {
+            pendingLogs.add(logString);
+        }
         m_Handler.post(new Runnable() {
             @Override
             public void run() {
