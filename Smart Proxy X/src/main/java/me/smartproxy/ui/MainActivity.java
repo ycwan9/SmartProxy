@@ -1,7 +1,9 @@
 package me.smartproxy.ui;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -11,23 +13,29 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.SwitchCompat;
+import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.*;
+import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
-import me.smartproxy.R;
-import me.smartproxy.core.LocalVpnService;
+import android.widget.EditText;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.Calendar;
 
-public class MainActivity extends Activity implements
+import me.smartproxy.R;
+import me.smartproxy.core.LocalVpnService;
+
+public class MainActivity extends ActionBarActivity implements
         View.OnClickListener,
         OnCheckedChangeListener,
         LocalVpnService.onStatusChangedListener {
@@ -40,16 +48,23 @@ public class MainActivity extends Activity implements
 
     private static final int START_VPN_SERVICE_REQUEST_CODE = 1985;
 
-    private Switch switchProxy;
+    private SwitchCompat switchProxy;
+
     private TextView textViewLog;
+
     private ScrollView scrollViewLog;
+
     private TextView textViewConfigUrl;
+
     private Calendar mCalendar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.my_awesome_toolbar);
+        setSupportActionBar(toolbar);
 
         scrollViewLog = (ScrollView) findViewById(R.id.scrollViewLog);
         textViewLog = (TextView) findViewById(R.id.textViewLog);
@@ -99,8 +114,9 @@ public class MainActivity extends Activity implements
 
     boolean isValidUrl(String url) {
         try {
-            if (url == null || url.isEmpty())
+            if (url == null || url.isEmpty()) {
                 return false;
+            }
 
             if (url.startsWith("/")) {//file path
                 File file = new File(url);
@@ -114,10 +130,12 @@ public class MainActivity extends Activity implements
                 }
             } else { //url
                 Uri uri = Uri.parse(url);
-                if (!"http".equals(uri.getScheme()) && !"https".equals(uri.getScheme()))
+                if (!"http".equals(uri.getScheme()) && !"https".equals(uri.getScheme())) {
                     return false;
-                if (uri.getHost() == null)
+                }
+                if (uri.getHost() == null) {
                     return false;
+                }
             }
             return true;
         } catch (Exception e) {
@@ -164,7 +182,7 @@ public class MainActivity extends Activity implements
         editText.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
         editText.setHint(getString(R.string.config_url_hint));
         editText.setText(readConfigUrl());
-
+        
         new AlertDialog.Builder(this)
                 .setTitle(R.string.config_url)
                 .setView(editText)
@@ -180,7 +198,8 @@ public class MainActivity extends Activity implements
                             setConfigUrl(configUrl);
                             textViewConfigUrl.setText(configUrl);
                         } else {
-                            Toast.makeText(MainActivity.this, R.string.err_invalid_url, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, R.string.err_invalid_url,
+                                    Toast.LENGTH_SHORT).show();
                         }
                     }
                 })
@@ -267,14 +286,16 @@ public class MainActivity extends Activity implements
             return;
         }
 
-        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+        IntentResult scanResult = IntentIntegrator
+                .parseActivityResult(requestCode, resultCode, intent);
         if (scanResult != null) {
             String configUrl = scanResult.getContents();
             if (isValidUrl(configUrl)) {
                 setConfigUrl(configUrl);
                 textViewConfigUrl.setText(configUrl);
             } else {
-                Toast.makeText(MainActivity.this, R.string.err_invalid_url, Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, R.string.err_invalid_url, Toast.LENGTH_SHORT)
+                        .show();
             }
             return;
         }
@@ -291,7 +312,7 @@ public class MainActivity extends Activity implements
             return false;
         }
 
-        switchProxy = (Switch) menuItem.getActionView();
+        switchProxy = (SwitchCompat) menuItem.getActionView();
         if (switchProxy == null) {
             return false;
         }
@@ -313,7 +334,8 @@ public class MainActivity extends Activity implements
                         .setNegativeButton(R.string.btn_more, new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://smartproxy.me")));
+                                startActivity(new Intent(Intent.ACTION_VIEW,
+                                        Uri.parse("http://smartproxy.me")));
                             }
                         })
                         .show();
