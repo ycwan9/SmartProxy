@@ -1,0 +1,85 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+}
+apply plugin: 'com.android.application'
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url "https://raw.github.com/embarkmobile/zxing-android-minimal/mvn-repo/maven-repository/"
+    }
+}
+
+android {
+    compileSdkVersion 21
+    buildToolsVersion "21.1.1"
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 21
+        versionCode 7
+        versionName "1.6"
+
+        ndk {
+            moduleName "shadowsocks"
+            abiFilter "armeabi-v7a"
+            stl "gnustl_static"
+            cFlags "-std=c99"
+            ldLibs "log"
+        }
+    }
+
+    sourceSets.main {
+        jni.srcDirs = [] // This prevents the auto generation of Android.mk
+        // This is not necessary unless you have precompiled libraries in your project.
+    }
+
+    task buildNative(type: Exec, description: 'Compile JNI source via NDK') {
+        commandLine "/Users/messiah/Developer/ndk/android-ndk-r10c/ndk-build",
+                '-C', file('src/main/jni').absolutePath,
+                // Change src/main/jni the relative path to your jni source
+                '-j', Runtime.runtime.availableProcessors(),
+                'all'
+    }
+
+    task cleanNative(type: Exec, description: 'Clean JNI object files') {
+        commandLine "/Users/messiah/Developer/ndk/android-ndk-r10c/ndk-build",
+                '-C', file('src/main/jni').absolutePath,
+                // Change src/main/jni the relative path to your jni source
+                'clean'
+    }
+
+    clean.dependsOn 'cleanNative'
+
+    tasks.withType(JavaCompile) {
+        compileTask -> compileTask.dependsOn buildNative
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("[android.keystore]")
+            storePassword System.getenv("KSTOREPWD")
+            keyAlias "[smartproxy]"
+            keyPassword System.getenv("KEYPWD")
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.release
+        }
+    }
+}
+
+dependencies {
+    compile 'com.embarkmobile:zxing-android-minimal:2.0.0@aar'
+    compile 'com.embarkmobile:zxing-android-integration:2.0.0@aar'
+    compile "com.android.support:appcompat-v7:21.0.3"
+    compile 'com.google.zxing:core:3.0.1'
+}
