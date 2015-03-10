@@ -7,3 +7,7 @@ openssl_subdirs := $(addprefix $(LOCAL_PATH)/openssl/,$(addsuffix /Android.mk, \
 	ssl \
 	))
 include $(openssl_subdirs)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE    := encryptor
+include $(BUILD_SHARED_LIBRARY)
