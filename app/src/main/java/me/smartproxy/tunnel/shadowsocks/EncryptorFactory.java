@@ -29,7 +29,7 @@ public class EncryptorFactory {
                 EncryptorCache.put(config.toString(), aesEncryptor);
             }
             return aesEncryptor;
-        } else if("rc4-md5".equalsIgnoreCase(config.EncryptMethod)) {
+        } else if ("rc4-md5".equalsIgnoreCase(config.EncryptMethod)) {
             IEncryptor rc4md5Encryptor = EncryptorCache.get(config.toString());
             if (rc4md5Encryptor == null) {
                 rc4md5Encryptor = new RC4MD5Encryptor(config.Password);
