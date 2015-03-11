@@ -1,5 +1,0 @@
-/Users/messiah/Developer/SmartProxy/app/src/main/obj/local/armeabi/objs/crypto/ec/ecp_nistputil.o: \
- /Users/messiah/Developer/SmartProxy/app/src/main/jni/openssl/crypto/ec/ecp_nistputil.c \
- /Users/messiah/Developer/SmartProxy/app/src/main/jni/openssl/include/openssl/opensslconf.h
-
-/Users/messiah/Developer/SmartProxy/app/src/main/jni/openssl/include/openssl/opensslconf.h:

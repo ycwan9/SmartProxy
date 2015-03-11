@@ -1,13 +1,11 @@
 package me.smartproxy.tunnel.shadowsocks;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Random;
+import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -20,33 +18,34 @@ import me.smartproxy.tunnel.IEncryptor;
 
 public class Aes256cfbEncryptor implements IEncryptor {
 
-    private static final int KEY_LEN = 32;
+    private static final int INDEX_KEY = 0;
+
+    private static final int INDEX_IV = 1;
+
+    private static final int ITERATIONS = 1;
+
+    private static final int KEY_SIZE_BITS = 32;
+
+    private static final int KEY_LEN = 16;
 
     private static final int IV_LEN = 16;
 
-    private byte[] _key = null;
+    private String password;
 
-    private byte[] _encryptIv = null;
+    private byte[] encryptIv;
 
-    private byte[] _dectyptIv = null;
+    private byte[] decryptIv;
 
     public Aes256cfbEncryptor(String password) {
-        try {
-//            _key = EVP_BytesToKey(KEY_LEN, IV_LEN, MessageDigest.getInstance("MD5"), null,
-//                    password.getBytes(), 1);
-            initKey(password.getBytes());
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
+        this.password = password;
     }
 
     /**
-     * Thanks go to Ola Bini for releasing this source on his blog.
-     * The source was obtained from <a href="http://olabini.com/blog/tag/evp_bytestokey/">here</a>
-     * .
+     * Thanks go to Ola Bini for releasing this source on his blog. The source was obtained from <a
+     * href="http://olabini.com/blog/tag/evp_bytestokey/">here</a> .
      */
-    public static byte[] EVP_BytesToKey(int key_len, int iv_len, MessageDigest md,
-            byte[] salt, byte[] data, int count) {
+    public byte[][] EVP_BytesToKey(int key_len, int iv_len, MessageDigest md, byte[] salt,
+            byte[] data, int count) {
         byte[][] both = new byte[2][];
         byte[] key = new byte[key_len];
         int key_ix = 0;
@@ -59,7 +58,7 @@ public class Aes256cfbEncryptor implements IEncryptor {
         int niv = iv_len;
         int i = 0;
         if (data == null) {
-            return key;
+            return both;
         }
         int addmd = 0;
         for (; ; ) {
@@ -111,113 +110,82 @@ public class Aes256cfbEncryptor implements IEncryptor {
         for (i = 0; i < md_buf.length; i++) {
             md_buf[i] = 0;
         }
-        return key;
+        return both;
     }
 
-    private void initKey(byte[] password) throws NoSuchAlgorithmException {
-        byte[] result = new byte[password.length + 16];
-        int i = 0;
-        byte[] md5sum = null;
-        _key = new byte[KEY_LEN];
-        while (i < KEY_LEN) {
-            MessageDigest digest = MessageDigest.getInstance("MD5");
-            if (i == 0) {
-                md5sum = digest.digest(password);
-            } else {
-                System.arraycopy(md5sum, 0, result, 0, md5sum.length);
-                System.arraycopy(password, 0, result, md5sum.length, password.length);
-                md5sum = digest.digest(result);
-            }
-            System.arraycopy(md5sum, 0, _key, i, md5sum.length);
-            i += md5sum.length;
-        }
-        secretKeySpec = new SecretKeySpec(_key, "AES");
-    }
+    public byte[] encrypt(byte[] contents, String pw)
+            throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException {
+        Cipher aesCFB = Cipher.getInstance("AES/CFB/NoPadding");
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
 
-    private SecretKeySpec secretKeySpec;
+        final byte[][] keyAndIV = EVP_BytesToKey(KEY_LEN, IV_LEN,
+                md5, null, pw.getBytes(), ITERATIONS);
 
-//    private IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
-
-    public byte[] encrypt(byte[] text) throws IOException,
-            NoSuchAlgorithmException, NoSuchPaddingException,
-            InvalidKeyException, InvalidAlgorithmParameterException,
-            IllegalBlockSizeException, BadPaddingException {
-
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        if (_encryptIv == null) {
-            _encryptIv = randBytes();
-            stream.write(_encryptIv);
+        if (encryptIv == null) {
+            encryptIv = keyAndIV[INDEX_IV];
         }
 
-        // Encrypt text
-        Cipher cipher = Cipher.getInstance("AES/CFB/NoPadding");
-        cipher.init(Cipher.ENCRYPT_MODE, this.secretKeySpec,
-                new IvParameterSpec(_encryptIv));
-        byte[] encryptText = cipher.doFinal(text);
-        // Hash text
-//        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-//        digest.update(encryptText);
-        stream.write(encryptText);
+        SecretKeySpec key = new SecretKeySpec(keyAndIV[INDEX_KEY], "AES");
+        IvParameterSpec iv = new IvParameterSpec(encryptIv);
 
-        byte[] bytes = stream.toByteArray();
-        stream.close();
-        return bytes;
+        aesCFB.init(Cipher.ENCRYPT_MODE, key, iv);
+        byte[] result = aesCFB.doFinal(contents);
+        return concat(encryptIv, result);
     }
 
-    private byte[] randBytes() {
-        byte[] newIv = new byte[IV_LEN];
-        new Random().nextBytes(newIv);
-        return newIv;
+    public byte[] concat(byte[] first, byte[] second) {
+        byte[] result = Arrays.copyOf(first, first.length + second.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        return result;
     }
 
-    public byte[] decrypt(byte[] bytes) throws NoSuchAlgorithmException,
-            NoSuchPaddingException, InvalidKeyException,
-            InvalidAlgorithmParameterException, IllegalBlockSizeException,
-            BadPaddingException, InvalidHashException, InvalidHeaderException {
-        ByteBuffer buf = ByteBuffer.wrap(bytes);
+    public byte[] decrypt(byte[] encrypted, String pw)
+            throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException,
+            BadPaddingException {
+        Cipher aesCBC = Cipher.getInstance("AES/CFB/NoPadding");
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
 
-        if (_dectyptIv == null) {
-            _dectyptIv = new byte[IV_LEN];
-            buf.get(_dectyptIv);
+        byte[] realData = null;
+        if (decryptIv == null) {
+            decryptIv = new byte[IV_LEN];
+            realData = new byte[encrypted.length - IV_LEN];
+            System.arraycopy(encrypted, 0, decryptIv, 0, IV_LEN);
+            System.arraycopy(encrypted, IV_LEN, realData, 0, realData.length);
         }
-//        if (!Arrays.equals(header, Aes256cfbEncryptor.header)) {
-//            throw new InvalidHeaderException(
-//                    "Header is not valid. Decryption aborted.");
-//        }
 
-        int aeslen = bytes.length - IV_LEN;
-        byte[] aes = new byte[aeslen];
-        buf.get(aes);
+        if (realData == null) {
+            realData = encrypted;
+        }
+        final byte[][] keyAndIV = EVP_BytesToKey(KEY_LEN, IV_LEN,
+                md5, null, pw.getBytes(), ITERATIONS);
+        SecretKeySpec key = new SecretKeySpec(keyAndIV[INDEX_KEY], "AES");
+        IvParameterSpec iv = new IvParameterSpec(decryptIv);
 
-        // Decrypt text
-        Cipher cipher = Cipher.getInstance("AES/CFB/NoPadding");
-        cipher.init(Cipher.DECRYPT_MODE, this.secretKeySpec,
-                new IvParameterSpec(_dectyptIv));
-        byte[] text = cipher.doFinal(aes);
+        aesCBC.init(Cipher.DECRYPT_MODE, key, iv);
+        return aesCBC.doFinal(realData);
+    }
 
-        // Compute hash
-//        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-//        digest.update(text);
-//        byte[] hash = digest.digest();
-//
-//        byte[] hash2 = new byte[shalen];
-//        buf.get(hash2);
-//
-//        if (!Arrays.equals(hash, hash2)) {
-//            throw new InvalidHashException(
-//                    "Verification failed. Decryption aborted.");
-//        }
+    public void encryptTest() throws Exception {
+        String pw = "AKeyForAES128CBC";
 
-        return text;
+        byte[] encrypted = "Secret message! Oh, My GOD!".getBytes();
+
+        byte[] decrypted = encrypt(encrypted, pw);
+        String str = new String(decrypted, "UTF-8");
+        System.out.println(str);
+        String answer = new String(decrypt(decrypted, pw));
+        System.out.println(answer);
+//        answer = new String(decrypt(str.getBytes(), pw));
+//        System.out.println(answer);
     }
 
     @Override
     public ByteBuffer encrypt(ByteBuffer buffer) {
         try {
-            byte[] data = encrypt(buffer.array());
-            return ByteBuffer.wrap(data);
-        } catch (IOException e) {
-            e.printStackTrace();
+            return ByteBuffer.wrap(encrypt(buffer.array(), password));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (NoSuchPaddingException e) {
@@ -237,7 +205,7 @@ public class Aes256cfbEncryptor implements IEncryptor {
     @Override
     public ByteBuffer decrypt(ByteBuffer buffer) {
         try {
-            return ByteBuffer.wrap(decrypt(buffer.array()));
+            return ByteBuffer.wrap(decrypt(buffer.array(), password));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (NoSuchPaddingException e) {
@@ -250,36 +218,7 @@ public class Aes256cfbEncryptor implements IEncryptor {
             e.printStackTrace();
         } catch (BadPaddingException e) {
             e.printStackTrace();
-        } catch (InvalidHashException e) {
-            e.printStackTrace();
-        } catch (InvalidHeaderException e) {
-            e.printStackTrace();
         }
         return null;
     }
-
-    class InvalidHeaderException extends Exception {
-
-        private static final long serialVersionUID = 1L;
-
-        public InvalidHeaderException(String string) {
-            super(string);
-        }
-    }
-
-    class InvalidHashException extends Exception {
-
-        private static final long serialVersionUID = 1L;
-
-        public InvalidHashException(String string) {
-            super(string);
-        }
-    }
-
-//    public static void main(String[] args) throws Exception {
-//        Aes256cfbEncryptor c = new Aes256cfbEncryptor(null);
-//        System.out.println(c.decrypt(c.encrypt(
-//                "String encryption/decryption with integrity check. In a real world example, the key should be kept secret and the IV should be unique.")));
-//
-//    }
 }

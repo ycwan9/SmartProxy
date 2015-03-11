@@ -384,7 +384,12 @@ public class ProxyConfig {
     private void addProxyToList(String[] items, int offset) throws Exception {
         for (int i = offset; i < items.length; i++) {
 //            String proxyString = items[i].trim();
-            String proxyString = "ss://cmM0LW1kNTpCQ0dwRzdaWGdyQDQ1LjYyLjEwMy41OTo0NDM=";
+            // BandWongon
+//            String proxyString = "ss://YWVzLTI1Ni1jZmI6QkNHcEc3WlhnckA0NS42Mi4xMDMuNTk6NDQz";
+            // Aes256 do
+            String proxyString = "ss://YWVzLTI1Ni1jZmI6U0hhcnJ5MzNAaGltZXNzaWFoLm1lOjgzODg=";
+            // table do
+//            String proxyString = "ss://dGFibGU6U0hhcnJ5MzNAaGltZXNzaWFoLm1lOjgzODg=";
             Config config = null;
             if (proxyString.startsWith("ss://")) {
                 config = ShadowsocksConfig.parse(proxyString);

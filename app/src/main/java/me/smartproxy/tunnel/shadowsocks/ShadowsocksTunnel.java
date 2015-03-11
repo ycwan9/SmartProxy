@@ -25,6 +25,7 @@ public class ShadowsocksTunnel extends Tunnel {
 
     @Override
     protected void onConnected(ByteBuffer buffer) throws Exception {
+        m_Encryptor = EncryptorFactory.createEncryptorByConfig(m_Config);
 
         //构造socks5请求（跳过前3个字节）
         buffer.clear();

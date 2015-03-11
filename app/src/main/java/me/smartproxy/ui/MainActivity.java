@@ -34,6 +34,7 @@ import java.util.Calendar;
 
 import me.smartproxy.R;
 import me.smartproxy.core.LocalVpnService;
+import me.smartproxy.crypto.CryptoUtils;
 
 public class MainActivity extends ActionBarActivity implements
         View.OnClickListener,
@@ -96,7 +97,13 @@ public class MainActivity extends ActionBarActivity implements
                 Utils.setAutoStartConfig(MainActivity.this, isChecked);
             }
         });
-        System.load("libcrypto");
+
+        CryptoUtils.exec("ls");
+//        try {
+//            Aes256cfbEncryptor.encryptTest(null);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     String getVersionName() {
