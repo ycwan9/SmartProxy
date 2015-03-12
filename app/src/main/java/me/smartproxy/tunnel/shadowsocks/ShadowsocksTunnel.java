@@ -36,8 +36,8 @@ public class ShadowsocksTunnel extends Tunnel {
         buffer.putShort((short) m_DestAddress.getPort());
         buffer.flip();
 
-        ByteBuffer encryptBuffer = m_Encryptor.encrypt(buffer);
-        if (write(encryptBuffer, true)) {
+//        ByteBuffer encryptBuffer = m_Encryptor.encrypt(buffer);
+        if (write(buffer, true)) {
             m_TunnelEstablished = true;
             onTunnelEstablished();
         } else {
