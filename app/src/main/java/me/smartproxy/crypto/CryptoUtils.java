@@ -14,6 +14,10 @@ public class CryptoUtils {
 
     public static native byte[] decrypt(byte[] array);
 
+    public static native byte[] encryptAll(byte[] array, String password, String method);
+
+    public static native byte[] decryptAll(byte[] array, String password, String method);
+
     static {
         System.loadLibrary("encryptor");
     }

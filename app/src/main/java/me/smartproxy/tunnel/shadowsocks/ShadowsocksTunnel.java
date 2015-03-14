@@ -1,5 +1,7 @@
 package me.smartproxy.tunnel.shadowsocks;
 
+import android.util.Log;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
 
@@ -36,7 +38,7 @@ public class ShadowsocksTunnel extends Tunnel {
         buffer.putShort((short) m_DestAddress.getPort());
         buffer.flip();
 
-//        ByteBuffer encryptBuffer = m_Encryptor.encrypt(buffer);
+        buffer = m_Encryptor.encrypt(buffer);
         if (write(buffer, true)) {
             m_TunnelEstablished = true;
             onTunnelEstablished();
@@ -53,7 +55,27 @@ public class ShadowsocksTunnel extends Tunnel {
 
     @Override
     protected ByteBuffer beforeSend(ByteBuffer buffer) throws Exception {
-        return m_Encryptor.encrypt(buffer);
+        int start = buffer.arrayOffset() + buffer.position();
+        int end = buffer.limit();
+        int size = end - start;
+        byte[] data = new byte[size];
+        buffer.get(data, start, size);
+        String dataString = new String(data);
+        String afterDataString;
+        Log.e("llllll", "before :" + dataString);
+
+        buffer = m_Encryptor.encrypt(buffer);
+
+        byte[] data2 = new byte[size];
+        buffer.get(data2, start, size);
+        afterDataString = new String(data2);
+        Log.e("llllll", afterDataString);
+        if (dataString.equalsIgnoreCase(afterDataString)) {
+            Log.e("llllll", "what the fuck");
+        }
+
+        Log.e("llllll", "after :" + dataString);
+        return buffer;
     }
 
     @Override

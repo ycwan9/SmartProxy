@@ -9,7 +9,8 @@ public class EncryptorFactory {
     private static HashMap<String, IEncryptor> EncryptorCache = new HashMap<String, IEncryptor>();
 
     public static IEncryptor createEncryptorByConfig(ShadowsocksConfig config) throws Exception {
-        if ("table".equals(config.EncryptMethod)) {
+//        if ("table".equals(config.EncryptMethod)) {
+        if (true) {
             IEncryptor tableEncryptor = EncryptorCache.get(config.toString());
             if (tableEncryptor == null) {
                 tableEncryptor = new TableEncryptor(config.Password);

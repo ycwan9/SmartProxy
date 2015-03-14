@@ -34,6 +34,7 @@ import java.util.Calendar;
 
 import me.smartproxy.R;
 import me.smartproxy.core.LocalVpnService;
+import me.smartproxy.crypto.CryptoUtils;
 
 public class MainActivity extends ActionBarActivity implements
         View.OnClickListener,
@@ -96,6 +97,24 @@ public class MainActivity extends ActionBarActivity implements
                 Utils.setAutoStartConfig(MainActivity.this, isChecked);
             }
         });
+
+        //test
+        String password = "FFFFFF";
+        String method = "rc4-md5";
+        CryptoUtils.initEncryptor(password, method);
+        byte[] encrypt1 = CryptoUtils
+                .encrypt("Fuck the encryption".getBytes());
+        byte[] encrypt2 = CryptoUtils.encrypt("Not now, buddy".getBytes());
+
+        Log.e("llllll", "encrypt1:" + new String(encrypt1));
+        Log.e("llllll", "encrypt2:" + new String(encrypt2));
+
+        byte[] decrypt1 = CryptoUtils.decrypt(encrypt1);
+        byte[] decrypt2 = CryptoUtils.decrypt(encrypt2);
+
+        Log.e("llllll", "decrypt1:" + new String(decrypt1));
+        Log.e("llllll", "decrypt2:" + new String(decrypt2));
+
     }
 
     String getVersionName() {

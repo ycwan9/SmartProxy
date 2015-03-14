@@ -13,11 +13,47 @@ public class Aes256cfbEncryptor implements IEncryptor {
 
     @Override
     public ByteBuffer encrypt(ByteBuffer buffer) {
-        return ByteBuffer.wrap(CryptoUtils.encrypt(buffer.array()));
+        int start = buffer.arrayOffset() + buffer.position();
+        int end = buffer.limit();
+        int size = end - start;
+        if (size <= 0) {
+            return buffer;
+        }
+        byte[] encryptionBuff = new byte[size];
+        int j = 0;
+        for (int i = start; i < end; i++, j++) {
+            encryptionBuff[j] = buffer.array()[i];
+        }
+
+        byte[] result = CryptoUtils.encrypt(encryptionBuff);
+
+        j = 0;
+        for (int i = start; i < end; i++, j++) {
+            buffer.array()[i] = result[j];
+        }
+
+        return buffer;
     }
 
     @Override
     public ByteBuffer decrypt(ByteBuffer buffer) {
-        return ByteBuffer.wrap(CryptoUtils.decrypt(buffer.array()));
+        int buffSize = buffer.limit() - buffer.arrayOffset() - buffer.position();
+        if (buffSize == 0) {
+            return buffer;
+        }
+        byte[] encryptionBuff = new byte[buffSize];
+
+        int j = 0;
+        for (int i = buffer.arrayOffset() + buffer.position(); i < buffer.limit(); i++, j++) {
+            encryptionBuff[j] = buffer.array()[i];
+        }
+        byte[] result = CryptoUtils.decrypt(encryptionBuff);
+
+        j = 0;
+        for (int i = buffer.arrayOffset() + buffer.position(); i < buffer.limit(); i++, j++) {
+            buffer.array()[i] = result[j];
+        }
+
+        return buffer;
     }
 }

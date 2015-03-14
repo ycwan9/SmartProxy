@@ -387,9 +387,12 @@ public class ProxyConfig {
             // BandWongon
 //            String proxyString = "ss://YWVzLTI1Ni1jZmI6QkNHcEc3WlhnckA0NS42Mi4xMDMuNTk6NDQz";
             // Aes256 do
-            String proxyString = "ss://YWVzLTI1Ni1jZmI6U0hhcnJ5MzNAaGltZXNzaWFoLm1lOjgzODg=";
+//            String proxyString = "ss://YWVzLTI1Ni1jZmI6U0hhcnJ5MzNAaGltZXNzaWFoLm1lOjgzODg=";
             // table do
 //            String proxyString = "ss://dGFibGU6U0hhcnJ5MzNAaGltZXNzaWFoLm1lOjgzODg=";
+            //local test
+            String proxyString = "ss://YWVzLTI1Ni1jZmI6U0hhcnJ5MzNAMTAuMi4xOTIuNDk6ODM4OA==";
+
             Config config = null;
             if (proxyString.startsWith("ss://")) {
                 config = ShadowsocksConfig.parse(proxyString);

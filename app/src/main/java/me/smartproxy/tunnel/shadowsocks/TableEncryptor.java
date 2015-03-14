@@ -100,7 +100,7 @@ public class TableEncryptor implements IEncryptor {
     public ByteBuffer encrypt(ByteBuffer buffer) {
         byte[] data = buffer.array();
         for (int i = buffer.arrayOffset() + buffer.position(); i < buffer.limit(); i++) {
-            data[i] = encryptTable[data[i] & 0xFF];
+            buffer.put(i, encryptTable[data[i] & 0xFF]);
         }
         return buffer;
     }
@@ -109,7 +109,7 @@ public class TableEncryptor implements IEncryptor {
     public ByteBuffer decrypt(ByteBuffer buffer) {
         byte[] data = buffer.array();
         for (int i = buffer.arrayOffset() + buffer.position(); i < buffer.limit(); i++) {
-            data[i] = decryptTable[data[i] & 0xFF];
+            buffer.put(i, decryptTable[data[i] & 0xFF]);
         }
         return buffer;
     }
