@@ -19,4 +19,5 @@ public class RC4MD5Encryptor implements IEncryptor {
     public ByteBuffer decrypt(ByteBuffer buffer) {
         return null;
     }
+
 }

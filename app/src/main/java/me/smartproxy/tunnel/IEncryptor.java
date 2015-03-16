@@ -7,5 +7,4 @@ public interface IEncryptor {
     ByteBuffer encrypt(ByteBuffer buffer);
 
     ByteBuffer decrypt(ByteBuffer buffer);
-
 }

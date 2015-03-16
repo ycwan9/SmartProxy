@@ -8,7 +8,6 @@ import org.apache.http.util.EntityUtils;
 
 import android.annotation.SuppressLint;
 import android.os.Build;
-import android.util.Log;
 
 import java.io.FileInputStream;
 import java.net.InetAddress;
@@ -322,7 +321,6 @@ public class ProxyConfig {
                         System.out.println(line);
                     }
 
-                    Log.e("llllll", tagString);
                     if (tagString.equals("ip")) {
                         addIPAddressToList(items, 1, m_IpList);
                     } else if (tagString.equals("dns")) {

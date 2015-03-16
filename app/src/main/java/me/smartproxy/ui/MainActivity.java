@@ -30,11 +30,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.Calendar;
 
 import me.smartproxy.R;
 import me.smartproxy.core.LocalVpnService;
-import me.smartproxy.crypto.CryptoUtils;
+import me.smartproxy.tunnel.IEncryptor;
+import me.smartproxy.tunnel.shadowsocks.Aes256cfbEncryptor;
 
 public class MainActivity extends ActionBarActivity implements
         View.OnClickListener,
@@ -98,19 +100,17 @@ public class MainActivity extends ActionBarActivity implements
             }
         });
 
-        //test
-        String password = "FFFFFF";
-        String method = "rc4-md5";
-        CryptoUtils.initEncryptor(password, method);
-        byte[] encrypt1 = CryptoUtils
-                .encrypt("Fuck the encryption".getBytes());
-        byte[] encrypt2 = CryptoUtils.encrypt("Not now, buddy".getBytes());
+        IEncryptor encryptor = new Aes256cfbEncryptor("SHarry33");
+
+        byte[] encrypt1 = encryptor.encrypt(ByteBuffer.wrap("Fuck the encryption".getBytes()))
+                .array();
+        byte[] encrypt2 = encryptor.encrypt(ByteBuffer.wrap("Not now, buddy".getBytes())).array();
 
         Log.e("llllll", "encrypt1:" + new String(encrypt1));
         Log.e("llllll", "encrypt2:" + new String(encrypt2));
 
-        byte[] decrypt1 = CryptoUtils.decrypt(encrypt1);
-        byte[] decrypt2 = CryptoUtils.decrypt(encrypt2);
+        byte[] decrypt1 = encryptor.decrypt(ByteBuffer.wrap(encrypt1)).array();
+        byte[] decrypt2 = encryptor.decrypt(ByteBuffer.wrap(encrypt2)).array();
 
         Log.e("llllll", "decrypt1:" + new String(decrypt1));
         Log.e("llllll", "decrypt2:" + new String(decrypt2));

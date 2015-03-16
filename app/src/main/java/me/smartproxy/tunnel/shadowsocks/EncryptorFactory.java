@@ -9,8 +9,7 @@ public class EncryptorFactory {
     private static HashMap<String, IEncryptor> EncryptorCache = new HashMap<String, IEncryptor>();
 
     public static IEncryptor createEncryptorByConfig(ShadowsocksConfig config) throws Exception {
-//        if ("table".equals(config.EncryptMethod)) {
-        if (true) {
+        if ("table".equals(config.EncryptMethod)) {
             IEncryptor tableEncryptor = EncryptorCache.get(config.toString());
             if (tableEncryptor == null) {
                 tableEncryptor = new TableEncryptor(config.Password);
@@ -21,15 +20,7 @@ public class EncryptorFactory {
             }
             return tableEncryptor;
         } else if ("aes-256-cfb".equalsIgnoreCase(config.EncryptMethod)) {
-            IEncryptor aesEncryptor = EncryptorCache.get(config.toString());
-            if (aesEncryptor == null) {
-                aesEncryptor = new Aes256cfbEncryptor(config.Password);
-                if (EncryptorCache.size() > 2) {
-                    EncryptorCache.clear();
-                }
-                EncryptorCache.put(config.toString(), aesEncryptor);
-            }
-            return aesEncryptor;
+            return new Aes256cfbEncryptor(config.Password);
         } else if ("rc4-md5".equalsIgnoreCase(config.EncryptMethod)) {
             IEncryptor rc4md5Encryptor = EncryptorCache.get(config.toString());
             if (rc4md5Encryptor == null) {
