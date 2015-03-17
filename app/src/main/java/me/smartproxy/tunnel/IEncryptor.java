@@ -4,7 +4,9 @@ import java.nio.ByteBuffer;
 
 public interface IEncryptor {
 
-    ByteBuffer encrypt(ByteBuffer buffer);
+    void encrypt(ByteBuffer buffer);
 
-    ByteBuffer decrypt(ByteBuffer buffer);
+    void decrypt(ByteBuffer buffer);
+
+    void dispose();
 }

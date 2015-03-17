@@ -22,9 +22,9 @@ public abstract class Tunnel {
 
     protected abstract boolean isTunnelEstablished();
 
-    protected abstract ByteBuffer beforeSend(ByteBuffer buffer) throws Exception;
+    protected abstract void beforeSend(ByteBuffer buffer) throws Exception;
 
-    protected abstract ByteBuffer afterReceived(ByteBuffer buffer) throws Exception;
+    protected abstract void afterReceived(ByteBuffer buffer) throws Exception;
 
     protected abstract void onDispose();
 
@@ -132,10 +132,10 @@ public abstract class Tunnel {
             int bytesRead = m_InnerChannel.read(buffer);
             if (bytesRead > 0) {
                 buffer.flip();
-                buffer = afterReceived(buffer);//先让子类处理，例如解密数据。
+                afterReceived(buffer);//先让子类处理，例如解密数据。
                 if (isTunnelEstablished() && buffer.hasRemaining()) {//将读到的数据，转发给兄弟。
-                    ByteBuffer newBuffer = m_BrotherTunnel.beforeSend(buffer);//发送之前，先让子类处理，例如做加密等。
-                    if (!m_BrotherTunnel.write(newBuffer, false)) {
+                    m_BrotherTunnel.beforeSend(buffer);//发送之前，先让子类处理，例如做加密等。
+                    if (!m_BrotherTunnel.write(buffer, false)) {
                         key.cancel();//兄弟吃不消，就取消读取事件。
                         if (ProxyConfig.IS_DEBUG) {
                             System.out.printf("%s can not read more.\n", m_ServerEP);
@@ -153,7 +153,7 @@ public abstract class Tunnel {
 
     public void onWritable(SelectionKey key) {
         try {
-            m_SendRemainBuffer = this.beforeSend(m_SendRemainBuffer);//发送之前，先让子类处理，例如做加密等。
+            this.beforeSend(m_SendRemainBuffer);//发送之前，先让子类处理，例如做加密等。
             if (this.write(m_SendRemainBuffer, false)) {//如果剩余数据已经发送完毕
                 key.cancel();//取消写事件。
                 if (isTunnelEstablished()) {

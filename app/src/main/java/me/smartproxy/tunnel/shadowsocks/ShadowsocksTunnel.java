@@ -35,7 +35,7 @@ public class ShadowsocksTunnel extends Tunnel {
         buffer.putShort((short) m_DestAddress.getPort());
         //buffer.put("I will be damned".getBytes());
         buffer.flip();
-        buffer = m_Encryptor.encrypt(buffer);
+        m_Encryptor.encrypt(buffer);
         if (write(buffer, false)) {
             m_TunnelEstablished = true;
             onTunnelEstablished();
@@ -51,21 +51,18 @@ public class ShadowsocksTunnel extends Tunnel {
     }
 
     @Override
-    protected ByteBuffer beforeSend(ByteBuffer buffer) throws Exception {
-//        return buffer;
-        return m_Encryptor.encrypt(buffer);
-//        return ByteBuffer.wrap(new byte[0]);
+    protected void beforeSend(ByteBuffer buffer) throws Exception {
+        m_Encryptor.encrypt(buffer);
     }
 
     @Override
-    protected ByteBuffer afterReceived(ByteBuffer buffer) throws Exception {
-//        return buffer;
-//        return ByteBuffer.wrap(new byte[0]);
-        return m_Encryptor.decrypt(buffer);
+    protected void afterReceived(ByteBuffer buffer) throws Exception {
+        m_Encryptor.decrypt(buffer);
     }
 
     @Override
     protected void onDispose() {
+        m_Encryptor.dispose();
         m_Config = null;
         m_Encryptor = null;
     }

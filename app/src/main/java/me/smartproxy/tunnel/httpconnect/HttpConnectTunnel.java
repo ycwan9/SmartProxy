@@ -56,15 +56,14 @@ public class HttpConnectTunnel extends Tunnel {
 
 
     @Override
-    protected ByteBuffer beforeSend(ByteBuffer buffer) throws Exception {
+    protected void beforeSend(ByteBuffer buffer) throws Exception {
         if (ProxyConfig.Instance.isIsolateHttpHostHeader()) {
             trySendPartOfHeader(buffer);//尝试发送请求头的一部分，让请求头的host在第二个包里面发送，从而绕过机房的白名单机制。
         }
-        return buffer;
     }
 
     @Override
-    protected ByteBuffer afterReceived(ByteBuffer buffer) throws Exception {
+    protected void afterReceived(ByteBuffer buffer) throws Exception {
         if (!m_TunnelEstablished) {
             //收到代理服务器响应数据
             //分析响应并判断是否连接成功
@@ -78,7 +77,6 @@ public class HttpConnectTunnel extends Tunnel {
             m_TunnelEstablished = true;
             super.onTunnelEstablished();
         }
-        return buffer;
     }
 
     @Override

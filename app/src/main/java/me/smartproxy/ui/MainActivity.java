@@ -97,49 +97,6 @@ public class MainActivity extends ActionBarActivity implements
                 Utils.setAutoStartConfig(MainActivity.this, isChecked);
             }
         });
-
-//        byte[] iv_send = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 13, 14, 15, 16};
-//        IEncryptor encryptor = new Aes256cfbEncryptor("SHarry33");
-//
-////        byte[] encrypt1 = encryptor.encrypt(ByteBuffer.wrap("Fuck the encryption!!!".getBytes()))
-////                .array();
-//        byte[] encrypt1 = CryptoUtils.encrypt("Fuck the encryption".getBytes(), iv_send);
-//        byte[] encrypt2 = encryptor.encrypt(ByteBuffer.wrap("Not now, buddy!".getBytes())).array();
-//        byte[] encrypt3 = encryptor.encrypt(ByteBuffer.wrap("I will be damned.".getBytes()))
-//                .array();
-//
-////        Log.e("llllll", "encrypt1:" + new String(encrypt1));
-////        Log.e("llllll", "encrypt2:" + new String(encrypt2));
-////        Log.e("llllll", "encrypt3:" + new String)
-//
-//        Log.e("this is not true", new String(CryptoUtils.decrypt(encrypt1, iv_send)));
-//        byte[] decrypt1 = encryptor.decrypt(ByteBuffer.wrap(encrypt1)).array();
-//        byte[] decrypt2 = encryptor.decrypt(ByteBuffer.wrap(encrypt2)).array();
-//        byte[] decrypt3 = encryptor.decrypt(ByteBuffer.wrap(encrypt3)).array();
-//        Log.e("llllll", "decrypt1:" + new String(decrypt1));
-//        Log.e("llllll", "decrypt2:" + new String(decrypt2));
-//        Log.e("llllll", "decrypt3:" + new String(decrypt3));
-
-        CryptoUtils.initEncryptor("SHaryy33", "aes-256-cfb", 0);
-        CryptoUtils.initEncryptor("SHaryy33", "aes-256-cfb", 1);
-        CryptoUtils.initEncryptor("SHaryy33", "aes-256-cfb", 2);
-        byte[] iv1 = CryptoUtils.randBytes(16), iv2 = CryptoUtils.randBytes(16), iv3 = CryptoUtils
-                .randBytes(16);
-        byte[] string1 = "First test".getBytes();
-        byte[] string2 = "Second test".getBytes();
-        byte[] string3 = "Third test".getBytes();
-
-        byte[] encrypt1 = CryptoUtils.encrypt(string1, 0);
-        byte[] encrypt2 = CryptoUtils.encrypt(string2, 1);
-        byte[] encrypt3 = CryptoUtils.encrypt(string3, 2);
-
-        byte[] result2 = CryptoUtils.decrypt(encrypt2, 0);
-        byte[] result1 = CryptoUtils.decrypt(encrypt1, 2);
-        byte[] result3 = CryptoUtils.decrypt(encrypt3, 1);
-
-        Log.e("result 1", new String(result1));
-        Log.e("result 2", new String(result2));
-        Log.e("result 3", new String(result3));
     }
 
     String getVersionName() {
