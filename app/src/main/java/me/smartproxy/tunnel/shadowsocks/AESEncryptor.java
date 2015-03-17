@@ -1,10 +1,15 @@
 package me.smartproxy.tunnel.shadowsocks;
 
+import android.util.Base64;
+import android.util.Log;
+
 import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -118,14 +123,21 @@ public class AESEncryptor implements IEncryptor {
         return both;
     }
 
+    private Lock encryptLock = new ReentrantLock();
+
+    private Lock decryptLock = new ReentrantLock();
+
     public byte[] encrypt(byte[] contents) {
+        byte[] data = Base64.encode(contents, Base64.DEFAULT);
+        Log.e("TAG", "buff len is " + data.length);
         try {
+            encryptLock.lock();
             Cipher aesCBC = Cipher.getInstance("AES/CFB/PKCS5Padding");
 
             if (_encryptIV == null) {
                 _encryptIV = new IvParameterSpec(encryptIVBytes);
                 aesCBC.init(Cipher.ENCRYPT_MODE, _keySpec, _encryptIV);
-                byte[] cipher = aesCBC.doFinal(contents);
+                byte[] cipher = aesCBC.doFinal(data);
                 byte[] result = new byte[IV_SIZE + cipher.length];
                 System.arraycopy(encryptIVBytes, 0, result, 0, IV_SIZE);
                 System.arraycopy(cipher, 0, result, IV_SIZE, cipher.length);
@@ -133,15 +145,20 @@ public class AESEncryptor implements IEncryptor {
             }
 
             aesCBC.init(Cipher.ENCRYPT_MODE, _keySpec, _encryptIV);
-            return aesCBC.doFinal(contents);
+            byte[] result = aesCBC.doFinal(data);
+            Log.e("TAG", "result length is " + result.length);
+            return result;
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
+        } finally {
+            encryptLock.unlock();
         }
         return contents;
     }
 
     public byte[] decrypt(byte[] encrypted) {
         try {
+            decryptLock.lock();
             Cipher aesCBC = Cipher.getInstance("AES/CFB/PKCS5Padding");
             byte[] realData;
             if (_decryptIV == null) {
@@ -153,10 +170,13 @@ public class AESEncryptor implements IEncryptor {
             } else {
                 realData = encrypted;
             }
+            byte[] data = Base64.decode(realData, Base64.DEFAULT);
             aesCBC.init(Cipher.DECRYPT_MODE, _keySpec, _decryptIV);
-            return aesCBC.doFinal(realData);
+            return aesCBC.doFinal(data);
         } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException | NoSuchAlgorithmException | BadPaddingException | InvalidKeyException e) {
             e.printStackTrace();
+        } finally {
+            decryptLock.unlock();
         }
         return encrypted;
     }

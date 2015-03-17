@@ -383,13 +383,14 @@ public class ProxyConfig {
         for (int i = offset; i < items.length; i++) {
 //            String proxyString = items[i].trim();
             // BandWongon
-//            String proxyString = "ss://YWVzLTI1Ni1jZmI6QkNHcEc3WlhnckA0NS42Mi4xMDMuNTk6NDQz";
+            //String proxyString = "ss://YWVzLTI1Ni1jZmI6QkNHcEc3WlhnckA0NS42Mi4xMDMuNTk6NDQz";
+//            String proxyString = "ss://cmM0LW1kNTpCQ0dwRzdaWGdyQDQ1LjYyLjEwMy41OTo0NDM=";
             // Aes256 do
-//            String proxyString = "ss://YWVzLTI1Ni1jZmI6U0hhcnJ5MzNAaGltZXNzaWFoLm1lOjgzODg=";
+            String proxyString = "ss://YWVzLTI1Ni1jZmI6U0hhcnJ5MzNAaGltZXNzaWFoLm1lOjgzODg=";
             // table do
 //            String proxyString = "ss://dGFibGU6U0hhcnJ5MzNAaGltZXNzaWFoLm1lOjgzODg=";
             //local test
-            String proxyString = "ss://YWVzLTI1Ni1jZmI6U0hhcnJ5MzNAMTAuMi4xOTIuNDk6ODM4OA==";
+//            String proxyString = "ss://YWVzLTI1Ni1jZmI6U0hhcnJ5MzNAMTAuMi4xOTIuNDk6ODM4OA==";
 
             Config config = null;
             if (proxyString.startsWith("ss://")) {

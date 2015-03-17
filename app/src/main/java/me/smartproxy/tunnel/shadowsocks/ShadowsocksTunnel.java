@@ -2,7 +2,6 @@ package me.smartproxy.tunnel.shadowsocks;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
-import java.util.Map;
 
 import me.smartproxy.tunnel.IEncryptor;
 import me.smartproxy.tunnel.Tunnel;
@@ -17,17 +16,16 @@ public class ShadowsocksTunnel extends Tunnel {
 
     public ShadowsocksTunnel(ShadowsocksConfig config, Selector selector) throws Exception {
         super(config.ServerAddress, selector);
-        if (config.Encryptor == null) {
-            throw new Exception("Error: The Encryptor for ShadowsocksTunnel is null.");
-        }
+//        if (config.Encryptor == null) {
+//            throw new Exception("Error: The Encryptor for ShadowsocksTunnel is null.");
+//        }
         m_Config = config;
-        m_Encryptor = config.Encryptor;
+
     }
 
     @Override
     protected void onConnected(ByteBuffer buffer) throws Exception {
         m_Encryptor = EncryptorFactory.createEncryptorByConfig(m_Config);
-
         //构造socks5请求（跳过前3个字节）
         buffer.clear();
         buffer.put((byte) 0x03);//domain
@@ -35,10 +33,10 @@ public class ShadowsocksTunnel extends Tunnel {
         buffer.put((byte) domainBytes.length);//domain length;
         buffer.put(domainBytes);
         buffer.putShort((short) m_DestAddress.getPort());
+        //buffer.put("I will be damned".getBytes());
         buffer.flip();
-
         buffer = m_Encryptor.encrypt(buffer);
-        if (write(buffer, true)) {
+        if (write(buffer, false)) {
             m_TunnelEstablished = true;
             onTunnelEstablished();
         } else {
@@ -54,11 +52,15 @@ public class ShadowsocksTunnel extends Tunnel {
 
     @Override
     protected ByteBuffer beforeSend(ByteBuffer buffer) throws Exception {
+//        return buffer;
         return m_Encryptor.encrypt(buffer);
+//        return ByteBuffer.wrap(new byte[0]);
     }
 
     @Override
     protected ByteBuffer afterReceived(ByteBuffer buffer) throws Exception {
+//        return buffer;
+//        return ByteBuffer.wrap(new byte[0]);
         return m_Encryptor.decrypt(buffer);
     }
 

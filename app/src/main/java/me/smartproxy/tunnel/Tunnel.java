@@ -135,7 +135,7 @@ public abstract class Tunnel {
                 buffer = afterReceived(buffer);//先让子类处理，例如解密数据。
                 if (isTunnelEstablished() && buffer.hasRemaining()) {//将读到的数据，转发给兄弟。
                     ByteBuffer newBuffer = m_BrotherTunnel.beforeSend(buffer);//发送之前，先让子类处理，例如做加密等。
-                    if (!m_BrotherTunnel.write(newBuffer, true)) {
+                    if (!m_BrotherTunnel.write(newBuffer, false)) {
                         key.cancel();//兄弟吃不消，就取消读取事件。
                         if (ProxyConfig.IS_DEBUG) {
                             System.out.printf("%s can not read more.\n", m_ServerEP);
