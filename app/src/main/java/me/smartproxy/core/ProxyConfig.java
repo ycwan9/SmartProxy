@@ -296,6 +296,9 @@ public class ProxyConfig {
         String[] lines = null;
         if (url.charAt(0) == '/') {
             lines = readConfigFromFile(url);
+        } else if (url.startsWith("ss://")) {
+            addProxyToList(new String[]{url}, 0);
+            return;
         } else {
             lines = downloadConfig(url);
         }
@@ -381,17 +384,7 @@ public class ProxyConfig {
 
     private void addProxyToList(String[] items, int offset) throws Exception {
         for (int i = offset; i < items.length; i++) {
-//            String proxyString = items[i].trim();
-            // BandWongon
-            //String proxyString = "ss://YWVzLTI1Ni1jZmI6QkNHcEc3WlhnckA0NS42Mi4xMDMuNTk6NDQz";
-            String proxyString = "ss://cmM0LW1kNTpCQ0dwRzdaWGdyQDQ1LjYyLjEwMy41OTo0NDM=";
-            // Aes256 do
-//            String proxyString = "ss://YWVzLTI1Ni1jZmI6U0hhcnJ5MzNAaGltZXNzaWFoLm1lOjgzODg=";
-            // table do
-//            String proxyString = "ss://dGFibGU6U0hhcnJ5MzNAaGltZXNzaWFoLm1lOjgzODg=";
-            //local test
-//            String proxyString = "ss://YWVzLTI1Ni1jZmI6U0hhcnJ5MzNAMTAuMi4xOTIuNDk6ODM4OA==";
-
+            String proxyString = items[i].trim();
             Config config = null;
             if (proxyString.startsWith("ss://")) {
                 config = ShadowsocksConfig.parse(proxyString);
