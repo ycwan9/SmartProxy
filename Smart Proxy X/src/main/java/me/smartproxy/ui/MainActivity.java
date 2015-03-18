@@ -34,6 +34,7 @@ import java.util.Calendar;
 
 import me.smartproxy.R;
 import me.smartproxy.core.LocalVpnService;
+import me.smartproxy.crypto.CryptoUtils;
 
 public class MainActivity extends ActionBarActivity implements
         View.OnClickListener,
@@ -129,6 +130,8 @@ public class MainActivity extends ActionBarActivity implements
                     onLogReceived(String.format("File(%s) can't read.", url));
                     return false;
                 }
+            } else if (url.startsWith("ss")) {//shadowsocks
+                return true;
             } else { //url
                 Uri uri = Uri.parse(url);
                 if (!"http".equals(uri.getScheme()) && !"https".equals(uri.getScheme())) {

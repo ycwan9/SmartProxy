@@ -296,6 +296,9 @@ public class ProxyConfig {
         String[] lines = null;
         if (url.charAt(0) == '/') {
             lines = readConfigFromFile(url);
+        } else if (url.startsWith("ss://")) {
+            addProxyToList(new String[]{url}, 0);
+            return;
         } else {
             lines = downloadConfig(url);
         }
