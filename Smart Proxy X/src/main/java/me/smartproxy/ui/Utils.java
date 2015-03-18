@@ -56,6 +56,8 @@ public class Utils {
 //                    onLogReceived(String.format("File(%s) can't read.", url));
                     return false;
                 }
+            } else if (url.startsWith("ss")) {//shadowsocks
+                return true;
             } else { //url
                 Uri uri = Uri.parse(url);
                 if (!"http".equals(uri.getScheme()) && !"https".equals(uri.getScheme())) {
