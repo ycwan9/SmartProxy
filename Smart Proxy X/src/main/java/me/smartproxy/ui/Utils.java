@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 
 import java.io.File;
+import java.util.regex.Pattern;
 
 public class Utils {
 
@@ -12,12 +13,19 @@ public class Utils {
 
     public static final String AUTO_START_CONFIG_KEY = "AUTO_START_CONFIG_KEY";
 
+    private static final String LOCAL_IP_ADDRESS = "(127[.]0[.]0[.]1)|" + "(localhost)|" +
+            "(10[.]\\d{1,3}[.]\\d{1,3}[.]\\d{1,3})|" +
+            "(172[.]((1[6-9])|(2\\d)|(3[01]))[.]\\d{1,3}[.]\\d{1,3})|" +
+            "(192[.]168[.]\\d{1,3}[.]\\d{1,3})";
+
+    private static Pattern localIpPattern = Pattern.compile(LOCAL_IP_ADDRESS);
+
     public static void setAutoStartConfig(Context context, boolean isChecked) {
         SharedPreferences preferences = context.getSharedPreferences("SmartProxy",
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(AUTO_START_CONFIG_KEY, isChecked);
-        editor.commit();
+        editor.apply();
     }
 
     public static String readConfigUrl(Context context) {
@@ -31,7 +39,7 @@ public class Utils {
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(CONFIG_URL_KEY, configUrl);
-        editor.commit();
+        editor.apply();
     }
 
     public static boolean readAutoStartConfig(Context context) {
@@ -40,7 +48,11 @@ public class Utils {
         return preferences.getBoolean(AUTO_START_CONFIG_KEY, false);
     }
 
-    static boolean isValidUrl(String url) {
+    public static boolean isLocalIp(String ip) {
+        return localIpPattern.matcher(ip).find();
+    }
+
+    public static boolean isValidUrl(String url) {
         try {
             if (url == null || url.isEmpty()) {
                 return false;

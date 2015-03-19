@@ -24,6 +24,7 @@ import me.smartproxy.tcpip.CommonMethods;
 import me.smartproxy.tunnel.Config;
 import me.smartproxy.tunnel.httpconnect.HttpConnectConfig;
 import me.smartproxy.tunnel.shadowsocks.ShadowsocksConfig;
+import me.smartproxy.ui.Utils;
 
 
 public class ProxyConfig {
@@ -230,12 +231,15 @@ public class ProxyConfig {
         if (host != null) {
             Boolean stateBoolean = getDomainState(host);
             if (stateBoolean != null) {
-                return stateBoolean.booleanValue();
+                return stateBoolean;
             }
         }
 
         if (isFakeIP(ip)) {
             return true;
+        }
+        if (Utils.isLocalIp(host)) {
+            return false;
         }
 
         if (m_outside_china_use_proxy && ip != 0) {
