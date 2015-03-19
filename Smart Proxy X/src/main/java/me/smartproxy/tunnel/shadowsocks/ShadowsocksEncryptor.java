@@ -1,7 +1,5 @@
 package me.smartproxy.tunnel.shadowsocks;
 
-import android.util.Log;
-
 import java.nio.ByteBuffer;
 import java.util.Random;
 
@@ -9,15 +7,17 @@ import me.smartproxy.crypto.CryptoUtils;
 import me.smartproxy.tunnel.IEncryptor;
 
 public class ShadowsocksEncryptor implements IEncryptor {
+
     private static final String TAG = "ShadowsocksEncryptor";
+
     private static Random _random;
 
     private long id;
 
-    private volatile boolean isEncrypting , isDecrypting;
+    private volatile boolean isEncrypting, isDecrypting;
 
     public ShadowsocksEncryptor(String password, String method) {
-        if(_random == null) {
+        if (_random == null) {
             _random = new Random(System.currentTimeMillis());
         }
         id = _random.nextLong();
@@ -61,7 +61,13 @@ public class ShadowsocksEncryptor implements IEncryptor {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while(isEncrypting || isDecrypting);
+                while (isEncrypting || isDecrypting) {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
                 CryptoUtils.releaseEncryptor(id);
             }
         }).start();
