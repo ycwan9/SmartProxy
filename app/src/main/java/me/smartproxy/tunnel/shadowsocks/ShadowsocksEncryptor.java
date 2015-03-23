@@ -32,12 +32,8 @@ public class ShadowsocksEncryptor implements IEncryptor {
         if (buffer.hasRemaining()) {
             isEncrypting = true;
             int bufferSize = buffer.remaining();
-            byte[] encryptionBuff = new byte[bufferSize];
-            buffer.get(encryptionBuff, buffer.position(), buffer.remaining());
-            byte[] cipher = CryptoUtils.encrypt(encryptionBuff, id);
-            buffer.clear();
-            buffer.put(cipher);
-            buffer.flip();
+            bufferSize = CryptoUtils.encrypt(buffer, bufferSize, id);
+            buffer.limit(bufferSize);
             isEncrypting = false;
         }
     }
@@ -46,23 +42,22 @@ public class ShadowsocksEncryptor implements IEncryptor {
     public void decrypt(ByteBuffer buffer) {
         if (buffer.hasRemaining()) {
             isDecrypting = true;
-            byte[] decryptBuff = new byte[buffer.remaining()];
-            buffer.get(decryptBuff, buffer.position(), buffer.remaining());
-            byte[] result = CryptoUtils.decrypt(decryptBuff, id);
-            buffer.clear();
-            buffer.put(result);
-            buffer.flip();
+            int bufferSize = buffer.remaining();
+            bufferSize = CryptoUtils.decrypt(buffer, bufferSize, id);
+            buffer.limit(bufferSize);
             isDecrypting = false;
         }
     }
 
     @Override
     public void dispose() {
+//        Log.e(TAG, "disposed id is " + id);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 while (isEncrypting || isDecrypting) {
                     try {
+//                        Log.e(TAG, "id " + id + " still waiting for dispose");
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -71,5 +66,12 @@ public class ShadowsocksEncryptor implements IEncryptor {
                 CryptoUtils.releaseEncryptor(id);
             }
         }).start();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        //make sure memory in jni is released
+        dispose();
+        super.finalize();
     }
 }

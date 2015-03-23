@@ -138,7 +138,8 @@ public class TcpProxyServer implements Runnable {
             LocalVpnService.Instance
                     .writeLog("Error: remote socket create failed: %s", e.toString());
             if (localTunnel != null) {
-                localTunnel.dispose();
+                localTunnel.
+                        dispose();
             }
         }
     }

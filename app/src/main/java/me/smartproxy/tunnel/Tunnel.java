@@ -14,7 +14,7 @@ import me.smartproxy.core.ProxyConfig;
 
 public abstract class Tunnel {
 
-    final static ByteBuffer GL_BUFFER = ByteBuffer.allocate(20000);
+    final static ByteBuffer GL_BUFFER = ByteBuffer.allocateDirect(20000);
 
     public static long SessionCount;
 
@@ -92,7 +92,7 @@ public abstract class Tunnel {
             if (copyRemainData) {//拷贝剩余数据，然后侦听写入事件，待可写入时写入。
                 //拷贝剩余数据
                 if (m_SendRemainBuffer == null) {
-                    m_SendRemainBuffer = ByteBuffer.allocate(buffer.capacity());
+                    m_SendRemainBuffer = ByteBuffer.allocateDirect(buffer.capacity());
                 }
                 m_SendRemainBuffer.clear();
                 m_SendRemainBuffer.put(buffer);

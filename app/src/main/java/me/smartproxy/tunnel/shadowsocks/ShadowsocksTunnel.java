@@ -66,5 +66,4 @@ public class ShadowsocksTunnel extends Tunnel {
         m_Config = null;
         m_Encryptor = null;
     }
-
 }

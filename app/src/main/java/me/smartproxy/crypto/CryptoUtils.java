@@ -1,17 +1,14 @@
 package me.smartproxy.crypto;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.nio.ByteBuffer;
 
 public class CryptoUtils {
 
     public static native void initEncryptor(String password, String method, long id);
 
-    public static native byte[] encrypt(byte[] array, long id);
+    public static native int encrypt(ByteBuffer array, int size, long id);
 
-    public static native byte[] decrypt(byte[] array, long id);
+    public static native int decrypt(ByteBuffer array, int size, long id);
 
     public static native byte[] encryptAll(byte[] array, String password, String method);
 
