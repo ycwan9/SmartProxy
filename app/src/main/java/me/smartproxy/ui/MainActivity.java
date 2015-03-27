@@ -31,10 +31,10 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.Set;
 
 import me.smartproxy.R;
 import me.smartproxy.core.LocalVpnService;
-import me.smartproxy.crypto.CryptoUtils;
 
 public class MainActivity extends ActionBarActivity implements
         View.OnClickListener,
@@ -61,6 +61,8 @@ public class MainActivity extends ActionBarActivity implements
 
     private Context _context;
 
+    private TextView textViewProfile;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,14 +76,10 @@ public class MainActivity extends ActionBarActivity implements
         scrollViewLog = (ScrollView) findViewById(R.id.scrollViewLog);
         textViewLog = (TextView) findViewById(R.id.textViewLog);
         findViewById(R.id.configUrlLayout).setOnClickListener(this);
-
+        findViewById(R.id.profileLayout).setOnClickListener(this);
+        textViewProfile = (TextView) findViewById(R.id.textViewProfileTitle);
         textViewConfigUrl = (TextView) findViewById(R.id.textViewConfigUrl);
-        String configUrl = Utils.readConfigUrl(this);
-        if (TextUtils.isEmpty(configUrl)) {
-            textViewConfigUrl.setText(R.string.config_not_set_value);
-        } else {
-            textViewConfigUrl.setText(configUrl);
-        }
+        updateTextView();
 
         textViewLog.setText(GL_HISTORY_LOGS);
         scrollViewLog.fullScroll(ScrollView.FOCUS_DOWN);
@@ -153,25 +151,46 @@ public class MainActivity extends ActionBarActivity implements
             return;
         }
 
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.config_url)
-                .setItems(new CharSequence[]{
-                        getString(R.string.config_url_scan),
-                        getString(R.string.config_url_manual)
-                }, new OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        switch (i) {
-                            case 0:
-                                scanForConfigUrl();
-                                break;
-                            case 1:
-                                showConfigUrlInputDialog();
-                                break;
-                        }
+        if (v.getId() == R.id.profileLayout) {
+            final Set<String> profiles = Utils.readProfileList(_context);
+            final CharSequence[] dialogItems = new CharSequence[profiles.size() + 1];
+            dialogItems[0] = getString(R.string.add_new_profile);
+            int i = 1;
+            for (String profile : profiles) {
+                dialogItems[i++] = profile;
+            }
+            new AlertDialog.Builder(_context).setItems(dialogItems, new OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (which == 0) {
+                        showProfileEditDialog();
+                    } else {
+                        Utils.setCurrentProfile(_context, dialogItems[which].toString());
+                        updateTextView();
                     }
-                })
-                .show();
+                }
+            }).show();
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.config_url)
+                    .setItems(new CharSequence[]{
+                            getString(R.string.config_url_scan),
+                            getString(R.string.config_url_manual)
+                    }, new OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            switch (i) {
+                                case 0:
+                                    scanForConfigUrl();
+                                    break;
+                                case 1:
+                                    showConfigUrlInputDialog();
+                                    break;
+                            }
+                        }
+                    })
+                    .show();
+        }
     }
 
     private void scanForConfigUrl() {
@@ -181,11 +200,62 @@ public class MainActivity extends ActionBarActivity implements
                 .initiateScan(IntentIntegrator.QR_CODE_TYPES);
     }
 
+    private void showProfileEditDialog() {
+        final EditText editText = new EditText(this);
+        editText.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
+        editText.setHint(getString(R.string.profile_hint));
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.profile_title)
+                .setView(editText)
+                .setPositiveButton(R.string.btn_ok, new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (editText.getText() == null) {
+                            return;
+                        }
+
+                        String profileName = editText.getText().toString().trim();
+                        if (isValidProfileName(profileName)) {
+                            Utils.addProfile(_context, profileName);
+                            Utils.setCurrentProfile(_context, profileName);
+                            updateTextView();
+                        } else {
+                            Toast.makeText(MainActivity.this, R.string.err_invalid_profile,
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .setNegativeButton(R.string.btn_cancel, null)
+                .show();
+    }
+
+    private void updateTextView() {
+        String profileName = Utils.readCurrentProfile(_context);
+        if (TextUtils.isEmpty(profileName)) {
+            profileName = getString(R.string.default_profile_name);
+            Utils.addProfile(_context, profileName);
+            Utils.setCurrentProfile(_context, profileName);
+        }
+        textViewProfile.setText(profileName);
+        String configUrl = Utils.readConfigUrl(_context, profileName);
+        if (TextUtils.isEmpty(configUrl)) {
+            textViewConfigUrl.setText(R.string.config_not_set_value);
+        } else {
+            textViewConfigUrl.setText(configUrl);
+        }
+    }
+
+    private boolean isValidProfileName(String profileName) {
+        Set<String> profiles = Utils.readProfileList(_context);
+        return profiles == null || !profiles.contains(profileName);
+    }
+
     private void showConfigUrlInputDialog() {
         final EditText editText = new EditText(this);
         editText.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
         editText.setHint(getString(R.string.config_url_hint));
-        editText.setText(Utils.readConfigUrl(_context));
+        editText.setText(Utils.readConfigUrl(_context, textViewProfile.getText().toString()));
 
         new AlertDialog.Builder(this)
                 .setTitle(R.string.config_url)
@@ -199,7 +269,8 @@ public class MainActivity extends ActionBarActivity implements
 
                         String configUrl = editText.getText().toString().trim();
                         if (isValidUrl(configUrl)) {
-                            Utils.setConfigUrl(_context, configUrl);
+                            Utils.setConfigUrl(_context, textViewProfile.getText().toString(),
+                                    configUrl);
                             textViewConfigUrl.setText(configUrl);
                         } else {
                             Toast.makeText(MainActivity.this, R.string.err_invalid_url,
@@ -257,7 +328,7 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     private void startVPNService() {
-        String configUrl = Utils.readConfigUrl(_context);
+        String configUrl = Utils.readConfigUrl(_context, textViewProfile.getText().toString());
         if (!isValidUrl(configUrl)) {
             Toast.makeText(this, R.string.err_invalid_url, Toast.LENGTH_SHORT).show();
             switchProxy.post(new Runnable() {
@@ -295,7 +366,7 @@ public class MainActivity extends ActionBarActivity implements
         if (scanResult != null) {
             String configUrl = scanResult.getContents();
             if (isValidUrl(configUrl)) {
-                Utils.setConfigUrl(_context, configUrl);
+                Utils.setConfigUrl(_context, textViewProfile.getText().toString(), configUrl);
                 textViewConfigUrl.setText(configUrl);
             } else {
                 Toast.makeText(MainActivity.this, R.string.err_invalid_url, Toast.LENGTH_SHORT)

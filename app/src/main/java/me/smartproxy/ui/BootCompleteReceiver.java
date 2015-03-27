@@ -27,7 +27,7 @@ public class BootCompleteReceiver extends BroadcastReceiver {
     }
 
     private void startVPNService(Context context) {
-        String configUrl = Utils.readConfigUrl(context);
+        String configUrl = Utils.readConfigUrl(context, Utils.readCurrentProfile(context));
         if (!Utils.isValidUrl(configUrl)) {
             Toast.makeText(context, R.string.err_invalid_url, Toast.LENGTH_SHORT).show();
             return;

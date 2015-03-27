@@ -297,6 +297,19 @@ public class ProxyConfig {
     }
 
     public void loadFromUrl(String url) throws Exception {
+        m_IpList.clear();
+        m_DnsList.clear();
+        m_RouteList.clear();
+        m_ProxyList.clear();
+        m_DomainMap.clear();
+        m_welcome_info = "";
+        m_dns_ttl = 0;
+        m_session_name = "";
+        m_user_agent = "";
+        m_outside_china_use_proxy = true;
+        m_isolate_http_host_header = false;
+        m_mtu = 0;
+
         String[] lines = null;
         if (url.charAt(0) == '/') {
             lines = readConfigFromFile(url);
@@ -306,12 +319,6 @@ public class ProxyConfig {
         } else {
             lines = downloadConfig(url);
         }
-
-        m_IpList.clear();
-        m_DnsList.clear();
-        m_RouteList.clear();
-        m_ProxyList.clear();
-        m_DomainMap.clear();
 
         int lineNumber = 0;
         for (String line : lines) {

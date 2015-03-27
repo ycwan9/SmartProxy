@@ -5,9 +5,15 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Utils {
+
+    public static final String CURRENT_PROFILE_KEY = "CURRENT_PROFILE_KEY";
+
+    public static final String PROFILE_LIST_KEY = "PROFILE_LIST_KEY";
 
     public static final String CONFIG_URL_KEY = "CONFIG_URL_KEY";
 
@@ -28,17 +34,17 @@ public class Utils {
         editor.apply();
     }
 
-    public static String readConfigUrl(Context context) {
+    public static String readConfigUrl(Context context, String profile) {
         SharedPreferences preferences = context.getSharedPreferences("SmartProxy",
                 Context.MODE_PRIVATE);
-        return preferences.getString(CONFIG_URL_KEY, "");
+        return preferences.getString(profile, "");
     }
 
-    public static void setConfigUrl(Context context, String configUrl) {
+    public static void setConfigUrl(Context context, String profile, String configUrl) {
         SharedPreferences preferences = context.getSharedPreferences("SmartProxy",
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(CONFIG_URL_KEY, configUrl);
+        editor.putString(profile, configUrl);
         editor.apply();
     }
 
@@ -61,11 +67,9 @@ public class Utils {
             if (url.startsWith("/")) {//file path
                 File file = new File(url);
                 if (!file.exists()) {
-//                    onLogReceived(String.format("File(%s) not exists.", url));
                     return false;
                 }
                 if (!file.canRead()) {
-//                    onLogReceived(String.format("File(%s) can't read.", url));
                     return false;
                 }
             } else if (url.startsWith("ss")) {//shadowsocks
@@ -85,4 +89,36 @@ public class Utils {
         }
     }
 
+    public static void addProfile(Context context, String profileName) {
+        SharedPreferences preferences = context.getSharedPreferences("SmartProxy",
+                Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        Set<String> profiles = preferences.getStringSet(PROFILE_LIST_KEY, null);
+        if (profiles == null) {
+            profiles = new HashSet<>();
+        }
+        profiles.add(profileName);
+        editor.putStringSet(PROFILE_LIST_KEY, profiles);
+        editor.apply();
+    }
+
+    public static void setCurrentProfile(Context context, String profileName) {
+        SharedPreferences preferences = context.getSharedPreferences("SmartProxy",
+                Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(CURRENT_PROFILE_KEY, profileName);
+        editor.apply();
+    }
+
+    public static String readCurrentProfile(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences("SmartProxy",
+                Context.MODE_PRIVATE);
+        return preferences.getString(CURRENT_PROFILE_KEY, null);
+    }
+
+    public static Set<String> readProfileList(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences("SmartProxy",
+                Context.MODE_PRIVATE);
+        return preferences.getStringSet(PROFILE_LIST_KEY, null);
+    }
 }
