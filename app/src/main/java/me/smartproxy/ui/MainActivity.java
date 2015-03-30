@@ -35,6 +35,7 @@ import java.util.Set;
 
 import me.smartproxy.R;
 import me.smartproxy.core.LocalVpnService;
+import me.smartproxy.core.ProxyConfig;
 
 public class MainActivity extends ActionBarActivity implements
         View.OnClickListener,
@@ -341,6 +342,7 @@ public class MainActivity extends ActionBarActivity implements
             return;
         }
 
+        ProxyConfig.CurrentProfileName = textViewProfile.getText().toString();
         textViewLog.setText("");
         GL_HISTORY_LOGS = null;
         onLogReceived("starting...");

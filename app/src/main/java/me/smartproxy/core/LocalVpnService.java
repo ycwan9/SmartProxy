@@ -222,11 +222,11 @@ public class LocalVpnService extends VpnService implements Runnable {
                     //加载配置文件
                     writeLog("Load config from %s ...", ConfigUrl);
                     try {
-                        ProxyConfig.Instance.loadFromUrl(ConfigUrl);
-                        if (ProxyConfig.Instance.getDefaultProxy() == null) {
+                        ProxyConfig.getInstance().loadFromUrl(ConfigUrl);
+                        if (ProxyConfig.getInstance().getDefaultProxy() == null) {
                             throw new Exception("Invalid config file.");
                         }
-                        writeLog("PROXY %s", ProxyConfig.Instance.getDefaultProxy());
+                        writeLog("PROXY %s", ProxyConfig.getInstance().getDefaultProxy());
                     } catch (Exception e) {
                         String errString = e.getMessage();
                         if (errString == null || errString.isEmpty()) {
@@ -239,9 +239,9 @@ public class LocalVpnService extends VpnService implements Runnable {
                     }
 
                     writeLog("Load config success.");
-                    String welcomeInfoString = ProxyConfig.Instance.getWelcomeInfo();
+                    String welcomeInfoString = ProxyConfig.getInstance().getWelcomeInfo();
                     if (welcomeInfoString != null && !welcomeInfoString.isEmpty()) {
-                        writeLog("%s", ProxyConfig.Instance.getWelcomeInfo());
+                        writeLog("%s", ProxyConfig.getInstance().getWelcomeInfo());
                     }
 
                     runVPN();
@@ -370,27 +370,27 @@ public class LocalVpnService extends VpnService implements Runnable {
 
     private ParcelFileDescriptor establishVPN() throws Exception {
         Builder builder = new Builder();
-        builder.setMtu(ProxyConfig.Instance.getMTU());
+        builder.setMtu(ProxyConfig.getInstance().getMTU());
         if (ProxyConfig.IS_DEBUG) {
-            System.out.printf("setMtu: %d\n", ProxyConfig.Instance.getMTU());
+            System.out.printf("setMtu: %d\n", ProxyConfig.getInstance().getMTU());
         }
 
-        IPAddress ipAddress = ProxyConfig.Instance.getDefaultLocalIP();
+        IPAddress ipAddress = ProxyConfig.getInstance().getDefaultLocalIP();
         LOCAL_IP = CommonMethods.ipStringToInt(ipAddress.Address);
         builder.addAddress(ipAddress.Address, ipAddress.PrefixLength);
         if (ProxyConfig.IS_DEBUG) {
             System.out.printf("addAddress: %s/%d\n", ipAddress.Address, ipAddress.PrefixLength);
         }
 
-        for (ProxyConfig.IPAddress dns : ProxyConfig.Instance.getDnsList()) {
+        for (ProxyConfig.IPAddress dns : ProxyConfig.getInstance().getDnsList()) {
             builder.addDnsServer(dns.Address);
             if (ProxyConfig.IS_DEBUG) {
                 System.out.printf("addDnsServer: %s\n", dns.Address);
             }
         }
 
-        if (ProxyConfig.Instance.getRouteList().size() > 0) {
-            for (ProxyConfig.IPAddress routeAddress : ProxyConfig.Instance.getRouteList()) {
+        if (ProxyConfig.getInstance().getRouteList().size() > 0) {
+            for (ProxyConfig.IPAddress routeAddress : ProxyConfig.getInstance().getRouteList()) {
                 builder.addRoute(routeAddress.Address, routeAddress.PrefixLength);
                 if (ProxyConfig.IS_DEBUG) {
                     System.out.printf("addRoute: %s/%d\n", routeAddress.Address,
@@ -428,10 +428,10 @@ public class LocalVpnService extends VpnService implements Runnable {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
         builder.setConfigureIntent(pendingIntent);
 
-        builder.setSession(ProxyConfig.Instance.getSessionName());
+        builder.setSession(ProxyConfig.getInstance().getSessionName());
         ParcelFileDescriptor pfdDescriptor = builder.establish();
         onStatusChanged(
-                ProxyConfig.Instance.getSessionName() + getString(R.string.vpn_connected_status),
+                ProxyConfig.getInstance().getSessionName() + getString(R.string.vpn_connected_status),
                 true);
         return pfdDescriptor;
     }
@@ -446,7 +446,7 @@ public class LocalVpnService extends VpnService implements Runnable {
             // ignore
         }
         onStatusChanged(
-                ProxyConfig.Instance.getSessionName() + getString(R.string.vpn_disconnected_status),
+                ProxyConfig.getInstance().getSessionName() + getString(R.string.vpn_disconnected_status),
                 false);
         this.m_VPNOutputStream = null;
     }

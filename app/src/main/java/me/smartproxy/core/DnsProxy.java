@@ -139,7 +139,7 @@ public class DnsProxy implements Runnable {
         rPointer.setDomain((short) 0xC00C);
         rPointer.setType(question.Type);
         rPointer.setClass(question.Class);
-        rPointer.setTTL(ProxyConfig.Instance.getDnsTTL());
+        rPointer.setTTL(ProxyConfig.getInstance().getDnsTTL());
         rPointer.setDataLength((short) 4);
         rPointer.setIP(newIP);
 
@@ -166,7 +166,7 @@ public class DnsProxy implements Runnable {
             Question question = dnsPacket.Questions[0];
             if (question.Type == 1) {
                 int realIP = getFirstIP(dnsPacket);
-                if (ProxyConfig.Instance.needProxy(question.Domain, realIP)) {
+                if (ProxyConfig.getInstance().needProxy(question.Domain, realIP)) {
                     int fakeIP = getOrCreateFakeIP(question.Domain);
                     tamperDnsResponse(rawPacket, dnsPacket, fakeIP);
                     if (ProxyConfig.IS_DEBUG) {
@@ -221,7 +221,8 @@ public class DnsProxy implements Runnable {
         Question question = dnsPacket.Questions[0];
         System.out.println("DNS Qeury " + question.Domain);
         if (question.Type == 1) {
-            if (ProxyConfig.Instance.needProxy(question.Domain, getIPFromCache(question.Domain))) {
+            if (ProxyConfig.getInstance().needProxy(question.Domain,
+                    getIPFromCache(question.Domain))) {
                 int fakeIP = getOrCreateFakeIP(question.Domain);
                 tamperDnsResponse(ipHeader.m_Data, dnsPacket, fakeIP);
 

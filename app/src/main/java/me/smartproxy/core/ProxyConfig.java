@@ -8,6 +8,7 @@ import org.apache.http.util.EntityUtils;
 
 import android.annotation.SuppressLint;
 import android.os.Build;
+import android.text.TextUtils;
 
 import java.io.FileInputStream;
 import java.net.InetAddress;
@@ -15,6 +16,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
@@ -29,7 +31,7 @@ import me.smartproxy.ui.Utils;
 
 public class ProxyConfig {
 
-    public static final ProxyConfig Instance = new ProxyConfig();
+    private static Map<String, ProxyConfig> _instanceMap;
 
     public final static boolean IS_DEBUG = true;
 
@@ -66,6 +68,26 @@ public class ProxyConfig {
     int m_mtu;
 
     Timer m_Timer;
+
+    public static String CurrentProfileName;
+
+    static {
+        _instanceMap = new HashMap<String, ProxyConfig>();
+    }
+
+    public static ProxyConfig getInstance() {
+        if (TextUtils.isEmpty(CurrentProfileName)) {
+            throw new RuntimeException("Profile not set");
+        }
+        synchronized (_instanceMap) {
+            ProxyConfig instance = _instanceMap.get(CurrentProfileName);
+            if (instance == null) {
+                instance = new ProxyConfig();
+                _instanceMap.put(CurrentProfileName, instance);
+            }
+            return instance;
+        }
+    }
 
     public class IPAddress {
 
@@ -302,13 +324,6 @@ public class ProxyConfig {
         m_RouteList.clear();
         m_ProxyList.clear();
         m_DomainMap.clear();
-        m_welcome_info = "";
-        m_dns_ttl = 0;
-        m_session_name = "";
-        m_user_agent = "";
-        m_outside_china_use_proxy = true;
-        m_isolate_http_host_header = false;
-        m_mtu = 0;
 
         String[] lines = null;
         if (url.charAt(0) == '/') {

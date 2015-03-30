@@ -98,7 +98,7 @@ public class TcpProxyServer implements Runnable {
         short portKey = (short) localChannel.socket().getPort();
         NatSession session = NatSessionManager.getSession(portKey);
         if (session != null) {
-            if (ProxyConfig.Instance.needProxy(session.RemoteHost, session.RemoteIP)) {
+            if (ProxyConfig.getInstance().needProxy(session.RemoteHost, session.RemoteIP)) {
                 if (ProxyConfig.IS_DEBUG) {
                     System.out.printf("%d/%d:[PROXY] %s=>%s:%d\n",
                             NatSessionManager.getSessionCount(), Tunnel.SessionCount,
