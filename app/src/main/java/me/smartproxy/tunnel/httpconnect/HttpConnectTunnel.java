@@ -24,7 +24,7 @@ public class HttpConnectTunnel extends Tunnel {
                 .format("CONNECT %s:%d HTTP/1.0\r\nProxy-Connection: keep-alive\r\nUser-Agent: %s\r\nX-App-Install-ID: %s\r\n\r\n",
                         m_DestAddress.getHostName(),
                         m_DestAddress.getPort(),
-                        ProxyConfig.Instance.getUserAgent(),
+                        ProxyConfig.getInstance().getUserAgent(),
                         ProxyConfig.AppInstallID);
 
         buffer.clear();
@@ -57,7 +57,7 @@ public class HttpConnectTunnel extends Tunnel {
 
     @Override
     protected void beforeSend(ByteBuffer buffer) throws Exception {
-        if (ProxyConfig.Instance.isIsolateHttpHostHeader()) {
+        if (ProxyConfig.getInstance().isIsolateHttpHostHeader()) {
             trySendPartOfHeader(buffer);//尝试发送请求头的一部分，让请求头的host在第二个包里面发送，从而绕过机房的白名单机制。
         }
     }
@@ -67,7 +67,7 @@ public class HttpConnectTunnel extends Tunnel {
         if (!m_TunnelEstablished) {
             //收到代理服务器响应数据
             //分析响应并判断是否连接成功
-            String response = new String(buffer.array(), buffer.position(), 12);
+            String response = new String(buffer.array(), buffer.position() + 4, 12);
             if (response.matches("^HTTP/1.[01] 200$")) {
                 buffer.limit(buffer.position());
             } else {
