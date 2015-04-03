@@ -24,7 +24,7 @@ android {
         versionCode 7
         versionName "1.6"
     }
-    
+
     signingConfigs {
         release {
             storeFile file("[android.keystore]")
@@ -48,4 +48,5 @@ dependencies {
     compile 'com.embarkmobile:zxing-android-integration:2.0.0@aar'
     compile "com.android.support:appcompat-v7:21.0.3"
     compile 'com.google.zxing:core:3.0.1'
+    compile 'com.squareup.okhttp:okhttp:2.3.0'
 }
