@@ -431,7 +431,7 @@ public class LocalVpnService extends VpnService implements Runnable {
         builder.setSession(ProxyConfig.getInstance().getSessionName());
         ParcelFileDescriptor pfdDescriptor = builder.establish();
         onStatusChanged(
-                ProxyConfig.getInstance().getSessionName() + getString(R.string.vpn_connected_status),
+                ProxyConfig.getInstance().getSessionName() + " " + getString(R.string.vpn_connected_status),
                 true);
         return pfdDescriptor;
     }
@@ -446,7 +446,7 @@ public class LocalVpnService extends VpnService implements Runnable {
             // ignore
         }
         onStatusChanged(
-                ProxyConfig.getInstance().getSessionName() + getString(R.string.vpn_disconnected_status),
+                ProxyConfig.getInstance().getSessionName() + " " + getString(R.string.vpn_disconnected_status),
                 false);
         this.m_VPNOutputStream = null;
     }
