@@ -5,3 +5,8 @@
 /local.properties
 
 *.iml
+#vim
+*.swp
+*~
+*.apk
+*.class

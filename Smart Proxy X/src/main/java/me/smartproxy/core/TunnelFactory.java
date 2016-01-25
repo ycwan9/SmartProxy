@@ -11,6 +11,8 @@ import me.smartproxy.tunnel.httpconnect.HttpConnectConfig;
 import me.smartproxy.tunnel.httpconnect.HttpConnectTunnel;
 import me.smartproxy.tunnel.shadowsocks.ShadowsocksConfig;
 import me.smartproxy.tunnel.shadowsocks.ShadowsocksTunnel;
+import me.smartproxy.tunnel.shadowsocks.Socks5Config;
+import me.smartproxy.tunnel.shadowsocks.Socks5Tunnel;
 
 public class TunnelFactory {
 	
