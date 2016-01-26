@@ -18,7 +18,7 @@ import me.smartproxy.tcpip.CommonMethods;
 import me.smartproxy.tunnel.Config;
 import me.smartproxy.tunnel.httpconnect.HttpConnectConfig;
 import me.smartproxy.tunnel.shadowsocks.ShadowsocksConfig;
-import me.smartproxy.tunnel.shadowsocks.Socks5Config;
+import me.smartproxy.tunnel.socks5.Socks5Config;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -361,7 +361,7 @@ public class ProxyConfig {
 			Config config=null;
 			if(proxyString.startsWith("ss://")){
 				config=ShadowsocksConfig.parse(proxyString);
-			} else if(proxyString.startsWith("socks5://"){
+			} else if(proxyString.startsWith("socks5://")){
 				config=Socks5Config.parse(proxyString);
 			} else {
 				if(!proxyString.toLowerCase().startsWith("http://")){
