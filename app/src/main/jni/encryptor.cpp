@@ -8,6 +8,7 @@
 
 extern "C" {
 #include "encrypt.h"
+#include "utils.h"
 }
 
 #define BUFF_SIZE 20000
@@ -27,33 +28,30 @@ JNIEXPORT void JNICALL Java_me_smartproxy_crypto_CryptoUtils_releaseEncryptor(JN
     if(connection != NULL) {
         if(connection->text_e_ctx != NULL) {
             cipher_context_release(&connection->text_e_ctx->evp);
-            free(connection->text_e_ctx);
+            ss_free(connection->text_e_ctx);
         }
         if(connection->text_d_ctx != NULL) {
             cipher_context_release(&connection->text_d_ctx->evp);
-            free(connection->text_d_ctx);
+            ss_free(connection->text_d_ctx);
         }
-        free(connection);
+        ss_free(connection);
     }
 }
 JNIEXPORT void JNICALL Java_me_smartproxy_crypto_CryptoUtils_initEncryptor(JNIEnv *env, jclass thiz, jstring jpassword, jstring jmethod, jlong id) {
     enc_connection *connection = enc_ctx_map[id];
 
     if(connection == NULL) {
-      LOGE("init connection");
         const char *password = env->GetStringUTFChars(jpassword, 0);
         const char *method = env->GetStringUTFChars(jmethod, 0);
-        connection = (enc_connection *)malloc(sizeof(struct enc_connection));
-        connection->text_e_ctx = (enc_ctx *)malloc(sizeof(struct enc_ctx));
-        connection->text_d_ctx = (enc_ctx *)malloc(sizeof(struct enc_ctx));
+        connection = (enc_connection *)ss_malloc(sizeof(struct enc_connection));
+        connection->text_e_ctx = (enc_ctx *)ss_malloc(sizeof(struct enc_ctx));
+        connection->text_d_ctx = (enc_ctx *)ss_malloc(sizeof(struct enc_ctx));
         int enc_method = enc_init(password, method);
-        LOGE("method is %d", enc_method);
         enc_ctx_init(enc_method, connection->text_e_ctx, 1);
         enc_ctx_init(enc_method, connection->text_d_ctx, 0);
         enc_ctx_map[id] = connection;
         env->ReleaseStringUTFChars(jpassword, password);
         env->ReleaseStringUTFChars(jmethod, method);
-        LOGE("init success");
     }
 }
 
@@ -93,41 +91,43 @@ JNIEXPORT jint JNICALL Java_me_smartproxy_crypto_CryptoUtils_encrypt(JNIEnv *env
                                                                     jint jsize, jlong id) {
 
     ssize_t size = (ssize_t) jsize;
-    jbyte *byteArray = (jbyte *) env->GetDirectBufferAddress(array);
-    char *data = (char *) malloc(size * sizeof(char));
-    memcpy(data, byteArray, size);
+    jbyte *bytes = (jbyte *) env->GetDirectBufferAddress(array);
 
-    buffer_t *buffer = (buffer_t *) malloc(size * sizeof(buffer_t));
+    buffer_t *buffer = (buffer_t *) ss_malloc(sizeof(buffer_t));
     balloc(buffer, BUFF_SIZE);
-    buffer->array = data;
+
+    memcpy(buffer->array, bytes, size);
     buffer->len = size;
 
     enc_connection *connection = enc_ctx_map[id];
     ss_encrypt(buffer, connection->text_e_ctx, BUFF_SIZE);
-    memcpy(byteArray, buffer, size);
+    size = buffer->len;
+    memcpy(bytes, buffer->array, buffer->len);
 
     bfree(buffer);
+
     return size;
 }
 
 JNIEXPORT jint JNICALL Java_me_smartproxy_crypto_CryptoUtils_decrypt(JNIEnv *env, jclass thiz, jobject array,
                                                                     jint jsize, jlong id) {
     ssize_t size = (ssize_t) jsize;
-    jbyte *byteArray = (jbyte *) env->GetDirectBufferAddress(array);
-    char *data = (char *) malloc(size * sizeof(char));
-    memcpy(data, byteArray, size);
+    jbyte *bytes = (jbyte *) env->GetDirectBufferAddress(array);
 
-    buffer_t *buffer = (buffer_t *) malloc(size * sizeof(buffer_t));
+    buffer_t *buffer = (buffer_t *) ss_malloc(sizeof(buffer_t));
     balloc(buffer, BUFF_SIZE);
-    buffer->array = data;
+
+    memcpy(buffer->array, bytes, size);
     buffer->len = size;
 
     enc_connection *connection = enc_ctx_map[id];
     ss_decrypt(buffer, connection->text_d_ctx, BUFF_SIZE);
+    size = buffer->len;
 
-    memcpy(byteArray, buffer, size);
+    memcpy(bytes, buffer->array, size);
 
     bfree(buffer);
+
     return size;
 }
 

@@ -28,6 +28,17 @@ model {
         }
     }
 
+    android.ndk {
+        moduleName "encryptor"
+        ldLibs.add('log')
+        cppFlags.add('-std=c++11')
+        cppFlags.add('-fexceptions')
+        cppFlags.add('-I' + file("src/main/jni/include"))
+        cppFlags.add('-I' + file("src/main/jni/include/sodium"))
+        cppFlags.add('-I' + file("src/main/jni/shadowsocks-libev/libsodium/src/libsodium/include"))
+        cppFlags.add('-I' + file("src/main/jni/shadowsocks-libev/libsodium/src/libsodium/include/sodium"))
+    }
+
     android.sources {
         main {
             jniLibs {
