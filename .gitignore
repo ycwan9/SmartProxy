@@ -7,3 +7,5 @@
 *.iml
 gradle
 build
+app/src/main/obj/
+app/src/main/libs
