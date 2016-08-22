@@ -79,7 +79,8 @@ public class HttpConnectTunnel extends Tunnel {
         if (!m_TunnelEstablished) {
             //收到代理服务器响应数据
             //分析响应并判断是否连接成功
-            String response = new String(buffer.array(), buffer.position(), 12);
+            String response = new String(buffer.array(),
+                    buffer.position() + buffer.arrayOffset(), 12);
             if (response.matches("^HTTP/1.[01] 200$")) {
                 buffer.limit(buffer.position());
             } else {
