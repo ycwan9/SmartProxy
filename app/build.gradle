@@ -16,6 +16,14 @@ repositories {
 }
 
 android {
+    compileSdkVersion 23
+    buildToolsVersion '25.0.1'
+    productFlavors {
+    }
+    sourceSets.main {
+        jniLibs.srcDir 'src/main/libs'
+        jni.srcDirs = []
+    }
     defaultConfig {
         applicationId "me.smartproxy"
         minSdkVersion 14
@@ -34,49 +42,21 @@ android {
             }
         }
     }
-    /*
-       signingConfigs {
-       create("release") {
-       storeFile = file("[android.keystore]")
-       storePassword =  System.getenv("KSTOREPWD")
-       keyAlias = "[smartproxy]"
-       keyPassword = System.getenv("KEYPWD")
-       }
-       }
-     */
-    compileSdkVersion 23
-    buildToolsVersion '25.0.1'
-    productFlavors {
+    signingConfigs {
+        create("release") {
+            storeFile = file("[android.keystore]")
+            storePassword = System.getenv("KSTOREPWD")
+            keyAlias = "[smartproxy]"
+            keyPassword = System.getenv("KEYPWD")
+        }
     }
-    sourceSets.main {
-        jniLibs.srcDir 'src/main/libs'
-        jni.srcDirs = []
-    }
-}
-
-/*android.sources {
-  main {
-  jni {
-  source {
-  srcDirs.removeAll()
-  srcDirs.add('src/main/none')
-  }
-  }
-  jniLibs {
-  source {
-  srcDirs.add('src/main/libs')
-  }
-  }
-  }
-  }*/
-
-
-android.buildTypes {
-    release {
-        shrinkResources = true
-        useProguard = true
-        //proguardFiles.add(getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-        //signingConfigs = signingConfigs.release
+    buildTypes {
+        release {
+            shrinkResources = true
+            useProguard = true
+            //proguardFiles.add(getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            //signingConfigs = signingConfigs.release
+        }
     }
 }
 
@@ -91,6 +71,18 @@ task cleanNative(type: Exec, description: 'Clean JNI object files') {
 }
 
 clean.dependsOn 'cleanNative'
+
+tasks.all { task ->
+    if (task.name.startsWith('compile') && task.name.contains('MainC')) {
+        task.enabled = false
+    }
+    if (task.name.startsWith('link')) {
+        task.enabled = false
+    }
+    if (task.name.endsWith('SharedLibrary')) {
+        task.dependsOn buildNative
+    }
+}
 
 tasks.withType(JavaCompile) {
     compileTask -> compileTask.dependsOn buildNative

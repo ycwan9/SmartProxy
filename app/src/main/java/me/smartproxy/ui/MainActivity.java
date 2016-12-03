@@ -36,6 +36,7 @@ import java.util.Set;
 import me.smartproxy.R;
 import me.smartproxy.core.LocalVpnService;
 import me.smartproxy.core.ProxyConfig;
+import me.smartproxy.crypto.CryptoUtils;
 
 public class MainActivity extends ActionBarActivity implements
         View.OnClickListener,
@@ -96,6 +97,7 @@ public class MainActivity extends ActionBarActivity implements
                 Utils.setAutoStartConfig(MainActivity.this, isChecked);
             }
         });
+
     }
 
     String getVersionName() {

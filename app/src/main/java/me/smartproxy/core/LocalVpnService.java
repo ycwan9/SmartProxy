@@ -15,6 +15,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -417,7 +419,12 @@ public class LocalVpnService extends VpnService implements Runnable {
             String value = (String) method.invoke(null, name);
             if (value != null && !"".equals(value) && !servers.contains(value)) {
                 servers.add(value);
-                builder.addRoute(value, 32);
+
+                // FIXME temporary fix for crash on ipv6 address
+                InetAddress address = InetAddress.getByName(value);
+                if (address instanceof Inet4Address) {
+                    builder.addRoute(address, 32);
+                }
                 if (ProxyConfig.IS_DEBUG) {
                     System.out.printf("%s=%s\n", name, value);
                 }
