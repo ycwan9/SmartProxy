@@ -4,80 +4,90 @@ buildscript {
     }
 
 }
-apply plugin: 'com.android.model.application'
+apply plugin: 'com.android.application'
 
 repositories {
     mavenCentral()
+    jcenter()
 
     maven {
         url "https://raw.github.com/embarkmobile/zxing-android-minimal/mvn-repo/maven-repository/"
     }
 }
 
-model {
-    android {
-        compileSdkVersion = 23
-        buildToolsVersion = "23.0.2"
-
-        defaultConfig.with {
-            applicationId = "me.smartproxy"
-            minSdkVersion.apiLevel = 14
-            targetSdkVersion.apiLevel = 23
-            versionCode = 7
-            versionName = "1.6"
+android {
+    defaultConfig {
+        applicationId "me.smartproxy"
+        minSdkVersion 14
+        targetSdkVersion 22
+        versionName 'lolipop_bate'
+        ndk {
+            moduleName "encryptor"
+            ldLibs 'log'
+            stl 'gnustl_shared'
         }
-    }
-
-//    android.ndk {
-//        moduleName = "encryptor"
-//        ldLibs.add('log')
-//        cppFlags.add("-std=c++11")
-//        cppFlags.add("-fexceptions")
-//        cppFlags.add(" -I${file("src/main/jni/prebuilts/include")}".toString())
-//        stl = 'gnustl_shared'
-//    }
-
-    android.sources {
-        main {
-            jni {
-                source {
-                    srcDirs.removeAll()
-                    srcDirs.add('src/main/none')
-                }
-            }
-            jniLibs {
-                source {
-                    srcDirs.add('src/main/libs')
-                }
+        externalNativeBuild {
+            ndkBuild {
+                cppFlags '-std=c++11'
+                cppFlags "-fexceptions"
+                cppFlags " -I${file("src/main/jni/prebuilts/include")}".toString()
             }
         }
     }
-
-    android.signingConfigs {
-        create("release") {
-            storeFile = file("[android.keystore]")
-            storePassword =  System.getenv("KSTOREPWD")
-            keyAlias = "[smartproxy]"
-            keyPassword = System.getenv("KEYPWD")
-        }
+    /*
+       signingConfigs {
+       create("release") {
+       storeFile = file("[android.keystore]")
+       storePassword =  System.getenv("KSTOREPWD")
+       keyAlias = "[smartproxy]"
+       keyPassword = System.getenv("KEYPWD")
+       }
+       }
+     */
+    compileSdkVersion 22
+    buildToolsVersion '23.0.3'
+    productFlavors {
     }
+    sourceSets.main {
+        jniLibs.srcDir 'src/main/libs'
+        jni.srcDirs = []
+    }
+}
 
-    android.buildTypes {
-        release {
-            shrinkResources = true
-            useProguard = true
-//            proguardFiles.add(getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-//            signingConfigs = signingConfigs.release
-        }
+/*android.sources {
+  main {
+  jni {
+  source {
+  srcDirs.removeAll()
+  srcDirs.add('src/main/none')
+  }
+  }
+  jniLibs {
+  source {
+  srcDirs.add('src/main/libs')
+  }
+  }
+  }
+  }*/
+
+
+android.buildTypes {
+    release {
+        shrinkResources = true
+        useProguard = true
+        //proguardFiles.add(getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        //signingConfigs = signingConfigs.release
     }
 }
 
 task buildNative(type: Exec, description: 'Compile JNI source via NDK') {
-    commandLine "ndk-build", '-C', file('src/main/jni').absolutePath
+    def ndkDir = android.ndkDirectory
+    commandLine "$ndkDir/ndk-build", '-C', file('src/main/jni').absolutePath
 }
 
 task cleanNative(type: Exec, description: 'Clean JNI object files') {
-    commandLine "ndk-build", '-C', file('src/main/jni').absolutePath, 'clean'
+    def ndkDir = android.ndkDirectory
+    commandLine "$ndkDir/ndk-build", '-C', file('src/main/jni').absolutePath, 'clean'
 }
 
 clean.dependsOn 'cleanNative'
@@ -87,10 +97,10 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.embarkmobile:zxing-android-minimal:2.0.0@aar'
     compile 'com.embarkmobile:zxing-android-integration:2.0.0@aar'
-    compile "com.android.support:appcompat-v7:23.2.0"
+    compile 'com.android.support:appcompat-v7:22.2.1'
     compile 'com.google.zxing:core:3.0.1'
     compile 'com.squareup.okhttp:okhttp:2.3.0'
 }
