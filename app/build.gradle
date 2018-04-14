@@ -62,12 +62,12 @@ android {
 }
 
 task buildNative(type: Exec, description: 'Compile JNI source via NDK') {
-    def ndkDir = android.ndkDirectory
+    def ndkDir = project.android.ndkDirectory.absolutePath
     commandLine "$ndkDir/ndk-build", '-C', file('src/main/jni').absolutePath
 }
 
 task cleanNative(type: Exec, description: 'Clean JNI object files') {
-    def ndkDir = android.ndkDirectory
+    def ndkDir = project.android.ndkDirectory.absolutePath
     commandLine "$ndkDir/ndk-build", '-C', file('src/main/jni').absolutePath, 'clean'
 }
 
