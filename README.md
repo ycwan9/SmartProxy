@@ -5,6 +5,7 @@ Http Proxy and Shadowsocks Client
 
 ======
 
+<<<<<<< HEAD
 ####  Feature provided by [hedaode/SmartProxy](https://github.com/hedaode/SmartProxy)
 
 * Http proxy and pac support
@@ -27,3 +28,9 @@ build with Android Studio or with command line
 
     ./gradlew assembleDebug // or release if you prepared the resources
     
+=======
+Support proxy:
+- HTTP CONNECT
+- Shadowsocks
+- socks5
+>>>>>>> 525201c000f1aee4bc73761298a8ea6eca8a68d3
