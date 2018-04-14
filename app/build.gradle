@@ -17,7 +17,7 @@ repositories {
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '25.0.1'
+    buildToolsVersion '27.0.3'
     productFlavors {
     }
     sourceSets.main {
@@ -28,7 +28,7 @@ android {
         applicationId "me.smartproxy"
         minSdkVersion 14
         targetSdkVersion 23
-        versionName 'lolipop_bate'
+        versionName 'lolipop_beta'
         ndk {
             moduleName "encryptor"
             ldLibs 'log'
@@ -52,6 +52,7 @@ android {
     }
     buildTypes {
         release {
+			minifyEnabled = true
             shrinkResources = true
             useProguard = true
             //proguardFiles.add(getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
